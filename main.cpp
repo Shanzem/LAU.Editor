@@ -114,61 +114,98 @@ int main(int, char**)
 //
 //	Window bools
 //
+
 ////////////////////////////////////////////////////////////
 bool show_editor_window 		= true;		// Editor options selector
-bool show_editor_window0		= true;		// Welcome screen/notes/changes
-bool show_editor_window1	 	= false;	// Working window blank
-bool show_editor_window2		= false;	// Working window blank
-bool show_editor_window3 		= false;	// Working window blank
-bool show_editor_window4 		= false;	// Working window blank
-bool show_editor_window5 		= false;	// Working window blank
-bool show_editor_window6 		= false;	// Working window blank
-bool show_LUA_commands 			= false;
-bool show_about_editor			= false;
-bool show_new_wizard			= false;
-bool show_new_help				= false;
-bool show_compiler				= false;
-bool show_run					= false;
-bool show_save					= false;
-bool show_open					= false;
-bool show_help_support			= false;
-bool show_options				= false;
-bool show_IO					= false;
-bool show_batch					= false;
+bool show_welcome				= true;		// Welcome screen/notes/changes loads out of "while"
+bool show_about_editor			= false;	// Blurb
+bool show_new_wizard			= false;	// Uses prefabs via loading
+bool show_compiler				= false;	// Standard cmd call
+bool show_run					= false;	// Runs Lua
+bool show_save					= false;	// Fully func
+bool show_open					= false;	// Fully func
+bool show_help_support			= false;	// implement in program web browser?
+bool show_options				= false;	// Uses inbuilt imgui call
+bool show_IO					= false;	// Fully func
+bool show_batch					= false;	// Fully func
+bool show_debugger				= false;	// Wip
+bool show_prefab_list			= false;	// Ease of grabbing test scripts
+bool show_save_complete			= false;	// Clickable
+bool load_snippets				= true;		// Saveable / Loading called out of "while"
+bool show_right_click_menu		= false;	// WIP Feature
 ////////////////////////////////////////////////////////////
 //
+// Windows and arrays.
 //
-bool accept_source0_workspace1	= false;
-bool accept_source1_workspace1	= false;
-bool accept_source2_workspace1	= false;
+bool Work_space_one				= false;
+bool Work_space_two				= false;
+bool Work_space_three			= false;
+
+
+static char Workspace1[1024*16];
+static char Workspace2[1024*16];
+static char Workspace3[1024*16];
+////////////////////////////////////////////////////////////
+//
+// Welcome details
+//
+static char Welcome[1024*16];
+static ImGuiOnceUponAFrame once;
+				if (once)
+					{
+            			ifstream file("Details.txt", ios::in|ios::ate);
+            			if (file.is_open())
+            				{						
+							streampos size;			
+					  		size = file.tellg();
+							file.seekg (0, ios::beg);
+							file.read (Welcome, size);
+							file.close();
+							}
+							
+					}
+////////////////////////////////////////////////////////////
+//
+//	Copy.bat
+//
+static char luaDIR[1024] = "copy *.lua ";
+static char outDIR[1024] = "copy *.out ";
 /////////////////////////////////////////////////////////////
 //
+// load selection.
 //
-bool accept_source0_workspace2	= false;
-bool accept_source1_workspace2	= false;
-bool accept_source2_workspace2	= false;
+bool load_selected_one			= false;
+bool load_selected_two			= false;
+bool load_selected_three		= false;
 /////////////////////////////////////////////////////////////
 //
+// Save selection
 //
-bool accept_source0_workspace3	= false;
-bool accept_source1_workspace3	= false;
-bool accept_source2_workspace3	= false;
-/////////////////////////////////////////////////////////////
-//
-//
-bool accept_source0_workspace4	= false;
-bool accept_source1_workspace4	= false;
-bool accept_source2_workspace4	= false;
-/////////////////////////////////////////////////////////////
-//
-//
-bool accept_source0_workspace5	= false;
-bool accept_source1_workspace5	= false;
-bool accept_source2_workspace5	= false;
+bool save_selected_one			= false;
+bool save_selected_two			= false;
+bool save_selected_three		= false;
 /////////////////////////////////////////////////////////////
 //RGBA colour for screen.
 ImVec4 clear_color = ImVec4(0.073f, 0.115f, 0.177f, 1.000f);
+//////////////////////////////////////////////////////////////
+//
+//	Code snippets
+static char Codesnippets[1024*16];
 
+static ImGuiOnceUponAFrame OnceAgain;
+				if (OnceAgain)
+					{
+            			ifstream file("Snippets.txt", ios::in|ios::ate);
+            			if (file.is_open())
+            				{						
+							streampos size;			
+					  		size = file.tellg();
+							file.seekg (0, ios::beg);
+							file.read (Codesnippets, size);
+							file.close();
+							}
+							
+					}
 ////////////////////////////////////////////////////////////////////////////////
 //
 //	ICONS
@@ -185,17 +222,17 @@ static LPDIRECT3DTEXTURE9       source = NULL;
 static LPDIRECT3DTEXTURE9       help = NULL;
 static LPDIRECT3DTEXTURE9       Editor = NULL;
 static LPDIRECT3DTEXTURE9       batch = NULL;
-D3DXCreateTextureFromFile( g_pd3dDevice, "filenew.png" , &filenew );			// image file grabs here :)
-D3DXCreateTextureFromFile( g_pd3dDevice, "fileopen.png" , &fileopen );
-D3DXCreateTextureFromFile( g_pd3dDevice, "filesave.png" , &filesave );
-D3DXCreateTextureFromFile( g_pd3dDevice, "mechanical.png" , &settings );
-D3DXCreateTextureFromFile( g_pd3dDevice, "folder.png" , &IO );
-D3DXCreateTextureFromFile( g_pd3dDevice, "compile.png" , &compile );
-D3DXCreateTextureFromFile( g_pd3dDevice, "source.png" , &source );
-D3DXCreateTextureFromFile( g_pd3dDevice, "compilerun.png" , &run );
-D3DXCreateTextureFromFile( g_pd3dDevice, "runbatch.png" , &batch );
-D3DXCreateTextureFromFile( g_pd3dDevice, "addition.png" , &help );
-D3DXCreateTextureFromFile( g_pd3dDevice, "LUA.Editor.png" , &Editor );
+D3DXCreateTextureFromFile( g_pd3dDevice, "filenew.png" ,	 &filenew );			// image file grabs here :)
+D3DXCreateTextureFromFile( g_pd3dDevice, "fileopen.png" ,	 &fileopen );
+D3DXCreateTextureFromFile( g_pd3dDevice, "filesave.png" ,	 &filesave );
+D3DXCreateTextureFromFile( g_pd3dDevice, "mechanical.png" ,	 &settings );
+D3DXCreateTextureFromFile( g_pd3dDevice, "folder.png" ,		 &IO );
+D3DXCreateTextureFromFile( g_pd3dDevice, "compile.png" ,	 &compile );
+D3DXCreateTextureFromFile( g_pd3dDevice, "source.png" ,		 &source );
+D3DXCreateTextureFromFile( g_pd3dDevice, "compilerun.png" ,	 &run );
+D3DXCreateTextureFromFile( g_pd3dDevice, "runbatch.png" ,	 &batch );
+D3DXCreateTextureFromFile( g_pd3dDevice, "addition.png" ,	 &help );
+D3DXCreateTextureFromFile( g_pd3dDevice, "LUA.Editor.png" ,	 &Editor );
 //////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////
 
@@ -220,243 +257,136 @@ D3DXCreateTextureFromFile( g_pd3dDevice, "LUA.Editor.png" , &Editor );
         ImGui_ImplDX9_NewFrame();             // IT ALL STARTS HERE
 //////////////////////////////////////////////////////////////
 //
-//	Working Variables
+//	Mouse WIP COPY/PASTE
 //
-//////////////////////////////////////////////////////////////		
-static char text1[1024*16] = 	"Notes/Revision/Changes\n\n"
-								"Welcome to the LUA editor Click NEW to begin!\n\n"
-								"TODO Save & Open! - Thats it!.\n"
-								"Grabbing latest LUA AND LUAC.";
-								
-								
-/////////////////////////////////////////////////////////////
+static char right_click_selection[40];
+static int right_menu_selection = -1;
+
+if(ImGui::IsMouseClicked( 1,true))
+		{
+				static ImGuiOnceUponAFrame fourth;
+				if (fourth)
+				{
+					show_right_click_menu = true;
+				}
+		}
+		if(ImGui::IsMouseClicked(0,true))
+		{
+				static ImGuiOnceUponAFrame fourth;
+				if (fourth)
+				{
+					show_right_click_menu = false;
+				}
+		}
+		if(show_right_click_menu)
+		{
+			ImVec2 base_pos = ImGui::GetMousePos();
+			ImGui::SetNextWindowPos(ImVec2(base_pos.x,base_pos.y),ImGuiCond_Appearing);
+			ImGui::SetNextWindowSize(ImVec2(100,63));
+			ImGui::Begin("###rightmenu", &show_right_click_menu,ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
+			ImGui::BeginChild("####rightmenu", ImVec2(-1,-1), true,ImGuiWindowFlags_NoScrollbar);
+            sprintf(right_click_selection, "  Copy", 1);
+            if (ImGui::Selectable(right_click_selection, right_menu_selection == 1 )){right_menu_selection = 1; show_right_click_menu = false;}
+			
+			 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////        
 //
-//	Templates
-static char Template0[1024*16];
-//////////////////////////////////////////////////////////////
-static char Template1[1024*16] = 	"-- the first program in every language\n\n"
-									"io.write(\"Hello world, from \",_VERSION,\"!\")";
-//////////////////////////////////////////////////////////////////
-static char Template2[1024*16] = "-- life.lua\n"
-"-- original by Dave Bollinger <DBollinger@compuserve.com> posted to lua-l\n"
-"-- modified to use ANSI terminal escape sequences\n"
-"-- modified to use for instead of while\n\n"
-"local write=io.write\n"
-"ALIVE=\" A \"	DEAD=\" D \"\n"
-"ALIVE=\" AO \"	DEAD=\" D- \"\n\n"
-"function delay() -- NOTE: SYSTEM-DEPENDENT, adjust as necessary\n"
-"	for i=1,10000 do end\n"
-"-- local i=os.clock()+1 while(os.clock()<i) do end\n"
-"end\n\n"
-"function ARRAY2D(w,h)\n"
-"	local t = {w=w,h=h}\n"
-"	for y=1,h do\n"
-"		t[y] = {}\n"
-"		for x=1,w do\n"
-"			t[y][x]=0\n"
-"   end\n"
-"  end\n"
-" return t\n"
-"end\n\n"
-"_CELLS = {}\n\n"
-"-- give birth to a \"shape\" within the cell array\n"
-"function _CELLS:spawn(shape,left,top)\n"
-"for y=0,shape.h-1 do\n"
-"    for x=0,shape.w-1 do\n"
-"      self[top+y][left+x] = shape[y*shape.w+x+1]\n"
-"    end\n"
-"  end\n"
-"end\n\n"
-"-- run the CA and produce the next generation\n"
-"function _CELLS:evolve(next)\n"
-"  local ym1,y,yp1,yi=self.h-1,self.h,1,self.h\n"
-"  while yi > 0 do\n"
-"    local xm1,x,xp1,xi=self.w-1,self.w,1,self.w\n"
-"    while xi > 0 do\n"
-"      local sum = self[ym1][xm1] + self[ym1][x] + self[ym1][xp1] +\n"
-"                  self[y][xm1] + self[y][xp1] +\n"
-"                  self[yp1][xm1] + self[yp1][x] + self[yp1][xp1]\n"
-"      next[y][x] = ((sum==2) and self[y][x]) or ((sum==3) and 1) or 0\n"
-"      xm1,x,xp1,xi = x,xp1,xp1+1,xi-1\n"
-"    end\n"
-"    ym1,y,yp1,yi = y,yp1,yp1+1,yi-1\n"
-"  end\n"
-"end\n\n"
-"-- output the array to screen\n"
-"function _CELLS:draw()\n"
-"  local out=\"\" -- accumulate to reduce flicker\n"
-"  for y=1,self.h do\n"
-"   for x=1,self.w do\n"
-"      out=out..(((self[y][x]>0) and ALIVE) or DEAD)\n"
-"    end\n"
-"    out=out..\" \\ n \"\n"
-"  end\n"
-"  write(out)\n"
-"end\n\n"
-"-- constructor\n"
-"function CELLS(w,h)\n"
-"  local c = ARRAY2D(w,h)\n"
-"  c.spawn = _CELLS.spawn\n"
-"  c.evolve = _CELLS.evolve\n"
-"  c.draw = _CELLS.draw\n"
-"  return c\n"
-"end\n\n"
-"--\n"
-"-- shapes suitable for use with spawn() above\n"
-"--\n"
-"HEART = { 1,0,1,1,0,1,1,1,1; w=3,h=3 }\n"
-"GLIDER = { 0,0,1,1,0,1,0,1,1; w=3,h=3 }\n"
-"EXPLODE = { 0,1,0,1,1,1,1,0,1,0,1,0; w=3,h=4 }\n"
-"FISH = { 0,1,1,1,1,1,0,0,0,1,0,0,0,0,1,1,0,0,1,0; w=5,h=4 }\n"
-"BUTTERFLY = { 1,0,0,0,1,0,1,1,1,0,1,0,0,0,1,1,0,1,0,1,1,0,0,0,1; w=5,h=5 }\n\n"
-"-- the main routine\n"
-"function LIFE(w,h)\n"
-"  -- create two arrays\n"
-"  local thisgen = CELLS(w,h)\n"
-"  local nextgen = CELLS(w,h)\n\n"
-"-- create some life\n"
-"  -- about 1000 generations of fun, then a glider steady-state\n"
-"  thisgen:spawn(GLIDER,5,4)\n"
-"  thisgen:spawn(EXPLODE,25,10)\n"
-"  thisgen:spawn(FISH,4,12)\n\n"
-"-- run until break\n"
-"  local gen=1\n"
-"  write(\"\027[2J\")	-- ANSI clear screen\n"
-"while 1 do\n"
-"    thisgen:evolve(nextgen)\n"
-"    thisgen,nextgen = nextgen,thisgen\n"
-"    write(\"\027[H\")	-- ANSI home cursor\n"
-"thisgen:draw()\n"
-"    write(\"Life - generation \",gen,\"\ n\")\n"
-"    gen=gen+1\n"
-"    if gen>2000 then break end\n"
-"    --delay()		-- no delay\n"
-"  end\n"
-"end\n\n"
-"LIFE(40,20)";
+// 	Dissect & get working .. COPY code. PASTE below.
+//            
+//			if (io.SetClipboardTextFn)
+//            {
+//                const int ib = edit_state.HasSelection() ? ImMin(edit_state.StbState.select_start, edit_state.StbState.select_end) : 0;
+//                const int ie = edit_state.HasSelection() ? ImMax(edit_state.StbState.select_start, edit_state.StbState.select_end) : edit_state.CurLenW;
+//                edit_state.TempTextBuffer.resize((ie-ib) * 4 + 1);
+//                ImTextStrToUtf8(edit_state.TempTextBuffer.Data, edit_state.TempTextBuffer.Size, edit_state.Text.Data+ib, edit_state.Text.Data+ie);
+//                SetClipboardText(edit_state.TempTextBuffer.Data);
+//            }
+//
+//////////////////////////////////////////////////////////////////////			
+//
+// 	PASTE code. 
+//
+//            if (const char* clipboard = GetClipboardText())
+//            {
+//                // Filter pasted buffer
+//                const int clipboard_len = (int)strlen(clipboard);
+//                ImWchar* clipboard_filtered = (ImWchar*)ImGui::MemAlloc((clipboard_len+1) * sizeof(ImWchar));
+//                int clipboard_filtered_len = 0;
+//                for (const char* s = clipboard; *s; )
+//                {
+//                    unsigned int c;
+//                    s += ImTextCharFromUtf8(&c, s, NULL);
+//                    if (c == 0)
+//                        break;
+//                    if (c >= 0x10000 || !InputTextFilterCharacter(&c, flags, callback, user_data))
+//                        continue;
+//                    clipboard_filtered[clipboard_filtered_len++] = (ImWchar)c;
+//                }
+//                clipboard_filtered[clipboard_filtered_len] = 0;
+//                if (clipboard_filtered_len > 0) // If everything was filtered, ignore the pasting operation
+//                {
+//                    stb_textedit_paste(&edit_state, &edit_state.StbState, clipboard_filtered, clipboard_filtered_len);
+//                    edit_state.CursorFollow = true;
+//                }
+//                ImGui::MemFree(clipboard_filtered);
+//            }
+//
+///////////////////////////////////////////////////////////////////////////			
+			
+			
+			ImGui::Separator();
+			sprintf(right_click_selection, "  Paste", 2);
+            if (ImGui::Selectable(right_click_selection, right_menu_selection == 2 )){right_menu_selection = 2;} 
+   			ImGui::EndChild();
+			ImGui::End();
+		}										
 //////////////////////////////////////////////////////////////
 //
-//	Code snippets
-static char Codesnippets[1024*16] = 	"Copy & paste us\n\n"
-										"-----	<-Comment\n\n"
-										"io.write(\" \")\n\n";
-										
-//////////////////////////////////////////////////////////////
-static char Name1[100];
-static char Name2[100];
-static char Name3[100];
-static char Name4[100];
-static char Name5[100];
-static int selectedsource = -1;
+//	Needed for check boxes and selectables
+//
+static char new_wizard_selection_workspace[40];
 static int selectedworkspace = -1;
-static int selectedworkspaceloader = -1;
-static int selectedworkspacesaver = -1;
-static char new_wizard_selection[32];
-static char new_wizard_selection_workspace[32];
-
-//////////////////////////////////////////////////////////////
 
 /////////////////////////////////////////////////////////////
 //
-//	Workspace window create with or without source.
+//	Workspace window create
 //
-if (accept_source0_workspace1)
+
+if (Work_space_one)
 {
-ImGui::Begin("##Template0Workspace1Window", &show_editor_window1);
-ImGui::InputTextMultiline("##Template0Workspace1", Template0, IM_ARRAYSIZE(Template0), ImVec2(-1.0f, -1.0 * 16), ImGuiInputTextFlags_AllowTabInput);
-ImGui::Text("");ImGui::SameLine(ImGui::GetWindowContentRegionWidth()/2);if(ImGui::Button("Close")){accept_source0_workspace1 = false;}
+ImGui::Begin("Workspace #1", &Work_space_one);
+ImGui::InputTextMultiline("##Workspace1", Workspace1, IM_ARRAYSIZE(Workspace1), ImVec2(-1.0f, -1.0 * 16), ImGuiInputTextFlags_AllowTabInput);
 ImGui::End();
-accept_source1_workspace1 = false;
-accept_source2_workspace1 = false;
 }
-if (accept_source1_workspace1)
+if (Work_space_two)
 {
-ImGui::Begin("##Template1Workspace1Window", &show_editor_window1);
-ImGui::InputTextMultiline("##Template1Workspace1", Template1, IM_ARRAYSIZE(Template1), ImVec2(-1.0f, -1.0 * 16), ImGuiInputTextFlags_AllowTabInput);
-ImGui::Text("");ImGui::SameLine(ImGui::GetWindowContentRegionWidth()/2);if(ImGui::Button("Close")){accept_source1_workspace1 = false;}
+ImGui::Begin("Workspace #2", &Work_space_two);
+ImGui::InputTextMultiline("##Workspace2", Workspace2, IM_ARRAYSIZE(Workspace2), ImVec2(-1.0f, -1.0 * 16), ImGuiInputTextFlags_AllowTabInput);
 ImGui::End();
-accept_source0_workspace1 = false;
-accept_source2_workspace1 = false;
 }
-if (accept_source2_workspace1)
+if (Work_space_three)
 {
-ImGui::Begin("##Template2Workspace1Window", &show_editor_window1);
-ImGui::InputTextMultiline("##Template2Workspace1", Template2, IM_ARRAYSIZE(Template2), ImVec2(-1.0f, -1.0 * 16), ImGuiInputTextFlags_AllowTabInput);
-ImGui::Text("");ImGui::SameLine(ImGui::GetWindowContentRegionWidth()/2);if(ImGui::Button("Close")){accept_source2_workspace1 = false;}
+ImGui::Begin("Workspace #3", &Work_space_three);
+ImGui::InputTextMultiline("##Workspace3", Workspace3, IM_ARRAYSIZE(Workspace3), ImVec2(-1.0f, -1.0 * 16), ImGuiInputTextFlags_AllowTabInput);
 ImGui::End();
-accept_source1_workspace1 = false;
-accept_source0_workspace1 = false;
 }
-if (accept_source0_workspace2)
-{
-ImGui::Begin("##Template0Workspace2Window", &show_editor_window1);
-ImGui::InputTextMultiline("##Template0Workspace2", Template0, IM_ARRAYSIZE(Template0), ImVec2(-1.0f, -1.0 * 16), ImGuiInputTextFlags_AllowTabInput);
-ImGui::Text("");ImGui::SameLine(ImGui::GetWindowContentRegionWidth()/2);if(ImGui::Button("Close")){accept_source0_workspace2 = false;}
-ImGui::End();
-accept_source1_workspace2 = false;
-accept_source2_workspace2 = false;
-}
-if (accept_source1_workspace2)
-{
-ImGui::Begin("##Template1Workspace2Window", &show_editor_window1);
-ImGui::InputTextMultiline("##Template1Workspace2", Template1, IM_ARRAYSIZE(Template1), ImVec2(-1.0f, -1.0 * 16), ImGuiInputTextFlags_AllowTabInput);
-ImGui::Text("");ImGui::SameLine(ImGui::GetWindowContentRegionWidth()/2);if(ImGui::Button("Close")){accept_source1_workspace2 = false;}
-ImGui::End();
-accept_source0_workspace2 = false;
-accept_source2_workspace2 = false;
-}
-if (accept_source2_workspace2)
-{
-ImGui::Begin("##Template2Workspace2Window", &show_editor_window1);
-ImGui::InputTextMultiline("##Template2Workspace2", Template2, IM_ARRAYSIZE(Template2), ImVec2(-1.0f, -1.0 * 16), ImGuiInputTextFlags_AllowTabInput);
-ImGui::Text("");ImGui::SameLine(ImGui::GetWindowContentRegionWidth()/2);if(ImGui::Button("Close")){accept_source2_workspace2 = false;}
-ImGui::End();
-accept_source1_workspace2 = false;
-accept_source0_workspace2 = false;
-}
-if (accept_source0_workspace3)
-{
-ImGui::Begin("##Template0Workspace3Window", &show_editor_window1);
-ImGui::InputTextMultiline("##Template0Workspace3", Template0, IM_ARRAYSIZE(Template0), ImVec2(-1.0f, -1.0 * 16), ImGuiInputTextFlags_AllowTabInput);
-ImGui::Text("");ImGui::SameLine(ImGui::GetWindowContentRegionWidth()/2);if(ImGui::Button("Close")){accept_source0_workspace3 = false;}
-ImGui::End();
-accept_source1_workspace3 = false;
-accept_source2_workspace3 = false;
-}
-if (accept_source1_workspace3)
-{
-ImGui::Begin("##Template1Workspace3Window", &show_editor_window1);
-ImGui::InputTextMultiline("##Template1Workspace3", Template1, IM_ARRAYSIZE(Template1), ImVec2(-1.0f, -1.0 * 16), ImGuiInputTextFlags_AllowTabInput);
-ImGui::Text("");ImGui::SameLine(ImGui::GetWindowContentRegionWidth()/2);if(ImGui::Button("Close")){accept_source1_workspace3 = false;}
-ImGui::End();
-accept_source0_workspace3 = false;
-accept_source2_workspace3 = false;
-}
-if (accept_source2_workspace3)
-{
-ImGui::Begin("##Template2Workspace3Window", &show_editor_window1);
-ImGui::InputTextMultiline("##Template2Workspace3", Template2, IM_ARRAYSIZE(Template2), ImVec2(-1.0f, -1.0 * 16), ImGuiInputTextFlags_AllowTabInput);
-ImGui::Text("");ImGui::SameLine(ImGui::GetWindowContentRegionWidth()/2);if(ImGui::Button("Close")){accept_source2_workspace3 = false;}
-ImGui::End();
-accept_source1_workspace3 = false;
-accept_source0_workspace3 = false;
-}
+
 /////////////////////////////////////////////////////////////
 //
 //	Editor and other windows
 //
-////////////////////////////////////////////////////////////
-			
+
+	
 		
 		show_editor_window 	= true;
-		if (show_editor_window0)
+		if (show_welcome)
 		{
-			ImGui::Begin("Welcome screen", &show_editor_window0);
+			ImGui::Begin("Welcome screen", &show_welcome);
 			ImGui::Text("");
 			ImGui::SameLine(ImGui::GetWindowContentRegionWidth()/2 -90);
 			ImGui::Image((void *)Editor, ImVec2(200, 200), ImVec2(0,0),ImVec2(1,1),ImVec4(255,255,255,255),ImVec4(0,0,0,0));
 			ImGui::Separator();
-			ImGui::InputTextMultiline("##source1", text1, IM_ARRAYSIZE(text1), ImVec2(-1.0f, -1.0 * 16), ImGuiInputTextFlags_AllowTabInput | ImGuiInputTextFlags_ReadOnly);
+			ImGui::InputTextMultiline("##Welcome", Welcome, IM_ARRAYSIZE(Welcome), ImVec2(-1.0f, -1.0 * 16), ImGuiInputTextFlags_AllowTabInput | ImGuiInputTextFlags_ReadOnly);
             ImGui::End();
 		}
 		if (show_editor_window)
@@ -478,12 +408,12 @@ accept_source0_workspace3 = false;
 			
 			ImGui::SameLine();
 			if(ImGui::ImageButton((void *)IO, ImVec2(20, 20), ImVec2(0,0),ImVec2(1,1),0,ImVec4(0,0,0,0),ImVec4(255,255,255,255))){show_IO = true;}
-			if (ImGui::IsItemHovered()){ImGui::BeginTooltip();ImGui::Text("Input/Output options");ImGui::EndTooltip();}
+			if (ImGui::IsItemHovered()){ImGui::BeginTooltip();ImGui::Text("Output options");ImGui::EndTooltip();}
 			
 			ImGui::SameLine();
 			if (ImGui::ImageButton((void *)batch, ImVec2(20, 20), ImVec2(0,0),ImVec2(1,1),0,ImVec4(0,0,0,0),ImVec4(255,255,255,255))){show_batch = true;}
-			if (ImGui::IsItemHovered()){ImGui::BeginTooltip();ImGui::Text("Run Batch -\n Moves last saved and compiler output\n to desired folders");ImGui::EndTooltip();}
-			if(show_batch == true){static ImGuiOnceUponAFrame once;if (once){system ("cmd");show_batch = false;}}
+			if (ImGui::IsItemHovered()){ImGui::BeginTooltip();ImGui::Text("Run Batch -\nMoves saved .lua/.out output\nto desired folders");ImGui::EndTooltip();}
+			if(show_batch == true){static ImGuiOnceUponAFrame once;if (once){system ("Copy.bat");show_batch = false;}}
 			
 			
 			ImGui::SameLine();
@@ -518,33 +448,28 @@ accept_source0_workspace3 = false;
             ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 5.0f);
             ImGui::BeginChild("####codesnippets", ImVec2(-1,-1), true,ImGuiWindowFlags_NoScrollbar);
             ImGui::InputTextMultiline("##CodeCopyArea", Codesnippets, IM_ARRAYSIZE(Codesnippets), ImVec2(-1.0f, -1.0 * 16), ImGuiInputTextFlags_AllowTabInput);
-			
+			ImGui::Text("");
+			ImGui::SameLine(ImGui::GetWindowContentRegionWidth()/2 -40);
+			if(ImGui::Button("Save Snippets"))
+			{
+				static ImGuiOnceUponAFrame once;
+				if (once)
+				{
+				ofstream save_data("Snippets.txt");
+				if (save_data.is_open())
+				{save_data << Codesnippets;save_data.close();show_save_complete = true;}
+				}
+			}
 			ImGui::EndChild();
             ImGui::PopStyleVar();
             ImGui::End();
 		}
 		if (show_new_wizard)
 		{
-			ImGui::Begin("New source wizard", &show_new_wizard);
-			ImGui::Text("Choose a Prefab & Work space.");
+			ImGui::Begin("New wizard", &show_new_wizard);
+			ImGui::Text("Choose Work space.");
 			ImGui::Separator();
-            ImGui::Text("Prefabs:");
-            ImGui::Separator();
-			ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 5.0f);
-            ImGui::BeginChild("####newwizard", ImVec2(-1,100), true,ImGuiWindowFlags_NoScrollbar);
-            sprintf(new_wizard_selection, "Blank", 0);
-            if (ImGui::Selectable(new_wizard_selection, selectedsource == 0 )){selectedsource = 0;} 
-            sprintf(new_wizard_selection, "Hello world", 1);
-            if (ImGui::Selectable(new_wizard_selection, selectedsource == 1 )){selectedsource = 1;} 
-            sprintf(new_wizard_selection, "Life -by Dave Bollinger", 2);
-            if (ImGui::Selectable(new_wizard_selection, selectedsource == 2 )){selectedsource = 2;} 
-            
-			ImGui::EndChild();
-            ImGui::PopStyleVar();
-            ImGui::Separator();
-            ImGui::Text("Work Space: Use for multiple.");
-            ImGui::Separator();
-			ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 5.0f);
+            ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 5.0f);
             ImGui::BeginChild("####newwizardworkspace", ImVec2(-1,100), true,ImGuiWindowFlags_NoScrollbar);
             sprintf(new_wizard_selection_workspace, "Work space #1", 1);
             if (ImGui::Selectable(new_wizard_selection_workspace, selectedworkspace == 1 )){selectedworkspace = 1;} 
@@ -555,41 +480,69 @@ accept_source0_workspace3 = false;
    			ImGui::EndChild();
             ImGui::PopStyleVar();
             ImGui::Separator();
+            ImGui::Text("To select a premade script,\n"
+						"Select a workspace use 'Open'\n"
+						"from editor tools.");
+            ImGui::Separator();
             if (ImGui::Button("Cancel",  ImVec2(50,0))) {  show_new_wizard = false; }
-            ImGui::SameLine(ImGui::GetWindowContentRegionWidth()-40,-1);
+            ImGui::SameLine();
+			if(ImGui::Button("Prefabs"))
+			{
+				show_open = true;
+				show_prefab_list = true;
+			}
+			ImGui::SameLine(ImGui::GetWindowContentRegionWidth()-40,-1);
             if (ImGui::Button("Ok", ImVec2(50,0))) 
 			{
 				static ImGuiOnceUponAFrame once;
 				if (once)
 				{
-				if (selectedworkspace == 1 && selectedsource == 0){accept_source0_workspace1	= true;accept_source1_workspace1	= false;accept_source2_workspace1	= false;}
-				if (selectedworkspace == 1 && selectedsource == 1){accept_source1_workspace1	= true;accept_source0_workspace1	= false;accept_source2_workspace1	= false;}
-				if (selectedworkspace == 1 && selectedsource == 2){accept_source2_workspace1	= true;accept_source0_workspace1	= false;accept_source1_workspace1	= false;}
-				if (selectedworkspace == 2 && selectedsource == 0){accept_source0_workspace2	= true;accept_source1_workspace2	= false;accept_source2_workspace2	= false;}
-				if (selectedworkspace == 2 && selectedsource == 1){accept_source1_workspace2	= true;accept_source0_workspace2	= false;accept_source2_workspace2	= false;}
-				if (selectedworkspace == 2 && selectedsource == 2){accept_source2_workspace2	= true;accept_source0_workspace2	= false;accept_source1_workspace2	= false;}
-				if (selectedworkspace == 3 && selectedsource == 0){accept_source0_workspace3	= true;accept_source1_workspace3	= false;accept_source2_workspace3	= false;}
-				if (selectedworkspace == 3 && selectedsource == 1){accept_source1_workspace3	= true;accept_source0_workspace3	= false;accept_source2_workspace3	= false;}
-				if (selectedworkspace == 3 && selectedsource == 2){accept_source2_workspace3	= true;accept_source0_workspace3	= false;accept_source1_workspace3	= false;}
+				if (selectedworkspace == 1){Work_space_one = true;}
+				if (selectedworkspace == 2){Work_space_two = true;}
+				if (selectedworkspace == 3){Work_space_three = true;}
 				
 				}
 			}
+			
             ImGui::End();
 		}
 		if (show_open)
 		{
 			ImGui::Begin("Open", &show_open);
-			ImGui::Text("To open a file\n"
+			ImGui::Text("To open a file\n\n"
 			"place script in the same location as LUA.Editor.exe\n\n"
-			"Choose a Work space to load the script into.");
+			"Choose a Workspace to load the script into.\n\n"
+			"Do not forget to add file extension.  .txt/.lua");
 			ImGui::Separator();
-			static char load_file[40] = "Type filename here...";    // setup text filtering, could be in latest update.
-            string load_name = load_file;							
-			ImGui::RadioButton("Workspace #1", &selectedworkspaceloader, 0);ImGui::SameLine();ImGui::RadioButton("Workspace #2", &selectedworkspaceloader, 1);ImGui::SameLine();ImGui::RadioButton("Workspace #3", &selectedworkspaceloader, 2);
+			static char load_file[100] = ".lua";    // setup text filtering, could be in latest update.
+            string load_name = load_file;
+			ImGui::Checkbox("Workspace #1", &load_selected_one);
+			ImGui::Checkbox("Workspace #2", &load_selected_two);
+			ImGui::Checkbox("Workspace #3", &load_selected_three);					
 			ImGui::Separator();
 			ImGui::InputText("#####open", load_file, IM_ARRAYSIZE(load_file), ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_AutoSelectAll);
             ImGui::Separator();
-			ImGui::Button("Open");
+			if (ImGui::Button("Open"))
+				{
+					static ImGuiOnceUponAFrame once;
+					if (once)
+					{
+					if (load_selected_one == true && Work_space_one	== true)
+					{ifstream file(load_name.c_str(), ios::in|ios::ate);if (file.is_open()){streampos size;size = file.tellg();file.seekg (0, ios::beg);file.read (Workspace1, size);file.close();}}
+				
+					if (load_selected_two == true && Work_space_two	== true)
+					{ifstream file(load_name.c_str(), ios::in|ios::ate);if (file.is_open()){streampos size;size = file.tellg();file.seekg (0, ios::beg);file.read (Workspace2, size);file.close();}}
+					
+					if (load_selected_three == true && Work_space_three == true)
+					{ifstream file(load_name.c_str(), ios::in|ios::ate);if (file.is_open()){streampos size;size = file.tellg();file.seekg (0, ios::beg);file.read (Workspace3, size);file.close();}}
+					}
+				}
+			ImGui::SameLine();
+			if(ImGui::Button("Prefab"))
+			{
+				show_prefab_list = true;
+				
+			}
 			ImGui::End();
 		}
 		
@@ -598,49 +551,117 @@ accept_source0_workspace3 = false;
 			ImGui::Begin("Save as", &show_save);
 			ImGui::Text("Type a save filename\n"
 			"Saved to the same location as LUA.Editor.exe\n\n"
+			"Do not forget to add extension .txt/.lua\n\n"
 			"Choose a Workspace to save.\n");
 			ImGui::Separator();
-			static char save_file[40] = "Type filename here...";    // setup text filtering, could be in latest update.
+			ImGui::Checkbox("Workspace #1", &save_selected_one);
+			ImGui::Checkbox("Workspace #2", &save_selected_two);
+			ImGui::Checkbox("Workspace #3", &save_selected_three);
+			if (save_selected_one == true){save_selected_two = false;save_selected_three = false;}
+			if (save_selected_two == true){save_selected_one = false;save_selected_three = false;}
+			if (save_selected_three == true){save_selected_two = false;save_selected_one = false;}
+			static char save_file[100] = "New_save.lua";    // setup text filtering, could be in latest update.
             string save_name = save_file;							
-			ImGui::RadioButton("Workspace #1", &selectedworkspacesaver, 0);ImGui::SameLine();ImGui::RadioButton("Workspace #2", &selectedworkspacesaver, 1);ImGui::SameLine();ImGui::RadioButton("Workspace #3", &selectedworkspacesaver, 2);
 			ImGui::Separator();
 			ImGui::InputText("####save", save_file, IM_ARRAYSIZE(save_file), ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_AutoSelectAll);
             ImGui::Separator();
-			ImGui::Button("Save");
+			if(ImGui::Button("Save"))
+			{
+				static ImGuiOnceUponAFrame once;
+				if (once)
+				{
+					if(save_selected_one == true){ofstream save_data(save_name.c_str());if (save_data.is_open()){save_data << Workspace1;save_data.close(); show_save_complete = true;}}
+					if(save_selected_two == true){ofstream save_data(save_name.c_str());if (save_data.is_open()){save_data << Workspace2;save_data.close();show_save_complete = true;}}
+					if(save_selected_three == true){ofstream save_data(save_name.c_str());if (save_data.is_open()){save_data << Workspace3;save_data.close();show_save_complete = true;}}
+				}
+			}
+			ImGui::End();
+		}
+		if (show_save_complete)
+		{
+			ImGui::Begin("###saved", &show_save_complete);
+			if(ImGui::Button("SAVED",ImVec2(-1,-1))) {show_save_complete = false;}
+			
+			ImGui::End();
+		}
+		if (show_prefab_list)
+		{
+			ImGui::Begin("Prefabs", &show_prefab_list);
+			ImGui::Text("Type in the selected with extension");
+			ImGui::Separator();
+			ImGui::Text("These are simple tests for Lua.  Some of them contain useful code.\n"
+						"They are meant to be run to make sure Lua is built correctly and also\n"
+						"to be read, to see how Lua programs look.\n"
+						"Here is a one-line summary of each program:\n\n");
+						
+			ImGui::Text("bisect.lua");ImGui::SameLine(200);ImGui::Text("bisection method for solving non-linear equations");
+   			ImGui::Text("cf.lua");ImGui::SameLine(200);ImGui::Text("temperature conversion table (celsius to farenheit)");
+   			ImGui::Text("echo.lua");ImGui::SameLine(200);ImGui::Text("echo command line arguments");
+   			ImGui::Text("env.lua");ImGui::SameLine(200);ImGui::Text("environment variables as automatic global variables");
+   			ImGui::Text("factorial.lua");ImGui::SameLine(200);ImGui::Text("factorial without recursion");
+   			ImGui::Text("fib.lua");ImGui::SameLine(200);ImGui::Text("fibonacci function with cache");
+   			ImGui::Text("fibfor.lua");ImGui::SameLine(200);ImGui::Text("fibonacci numbers with coroutines and generators");
+   			ImGui::Text("globals.lua");ImGui::SameLine(200);ImGui::Text("report global variable usage");
+   			ImGui::Text("hello.lua");ImGui::SameLine(200);ImGui::Text("the first program in every language");
+   			ImGui::Text("life.lua");ImGui::SameLine(200);ImGui::Text("Conways Game of Life");
+   			ImGui::Text("luac.lua");ImGui::SameLine(200);ImGui::Text("bare-bones luac");
+   			ImGui::Text("printf.lua");ImGui::SameLine(200);ImGui::Text("an implementation of printf");
+   			ImGui::Text("readonly.lua");ImGui::SameLine(200);ImGui::Text("make global variables readonly");
+   			ImGui::Text("sieve.lua");ImGui::SameLine(200);ImGui::Text("the sieve of of Eratosthenes programmed with coroutines");
+   			ImGui::Text("sort.lua");ImGui::SameLine(200);ImGui::Text("two implementations of a sort function");
+   			ImGui::Text("table.lua");ImGui::SameLine(200);ImGui::Text("make table, grouping all data for the same item");
+   			ImGui::Text("trace-calls.lua");ImGui::SameLine(200);ImGui::Text("trace calls");
+   			ImGui::Text("trace-globals.lua");ImGui::SameLine(200);ImGui::Text("trace assigments to global variables");
+   			ImGui::Text("undefined.lua");ImGui::SameLine(200);ImGui::Text("catch \"undefined\" global variables");
+   			ImGui::Text("xd.lua");ImGui::SameLine(200);ImGui::Text("hex dump");
+			
 			ImGui::End();
 		}
 		if (show_IO)
 		{
-			ImGui::Begin("Input/Output options", &show_IO);
-			ImGui::Text("Type in the selected fields\n"
-						"To alter the IO options\n\n"
-						"!NO BLANK SPACES IN DIR!\n"
-						"!Run batch file when saved or complation complete!");
+			ImGui::Begin("Output options", &show_IO);
+			ImGui::Text("Type in the selected fields.\n"
+						"To alter the output options then update batch.\n\n"
+						"Once the batch file is made, you then only change the directories\n"
+						"When you change working folders. Otherwise options are kept in batch.\n\n"
+						"Default directory is the same location of LUA.Editor\n\n"
+						"No blank spaces & special characters.\n"
+						"Run 'Batch' from Editor tools.\n\n"
+						"Batch uses a wildcard and will move all .lua/.out");
 			ImGui::Separator();
-			static char save_Input[40] = "C:\\%DIR%";    // setup text filtering, could be in latest update.
-            string save_IO_input = save_Input;
-			ImGui::Text("Input script folder");
-			ImGui::SameLine(200);							
-			ImGui::InputText("###Input", save_Input, IM_ARRAYSIZE(save_Input), ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_AutoSelectAll);
-            ImGui::SameLine();
-            ImGui::Button("Save");
-			ImGui::Separator();
-            static char save_Output_saved[40] = "C:\\%DIR%";    // setup text filtering, could be in latest update.
-            string saved_IO_Output = save_Output_saved;							
-			ImGui::Text("Output script save folder");
-			ImGui::SameLine(200);							
+			static char save_Output_saved[1024] = "C:\\%DIR%";    // setup text filtering, could be in latest update.
+            string saved_lua_Output = save_Output_saved;							
+			ImGui::Text("Output script save folder - Where you wish the .lua scripts to be moved to.");
+										
 			ImGui::InputText("###save_Output_saved", save_Output_saved, IM_ARRAYSIZE(save_Output_saved), ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_AutoSelectAll);
             ImGui::SameLine();
             ImGui::Button("Save");
 			ImGui::Separator();
-			static char save_Output_complation[40] = "C:\\%DIR%";    // setup text filtering, could be in latest update.
-            string save_Output_compile_IO = save_Output_complation;							
-			ImGui::Text("Compiler output folder");
-			ImGui::SameLine(200);							
+			static char save_Output_complation[1024] = "C:\\%DIR%";    // setup text filtering, could be in latest update.
+            string save_Output_compiler = save_Output_complation;							
+			ImGui::Text("Compiler output folder - Where you wish the .out scripts to be moved to.");
+										
 			ImGui::InputText("###save_Output_complation", save_Output_complation, IM_ARRAYSIZE(save_Output_complation), ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_AutoSelectAll);
             ImGui::SameLine();
             ImGui::Button("Save");
 			ImGui::Separator();
+			if(ImGui::Button("Update batch"))
+			{
+				static ImGuiOnceUponAFrame once;
+				if (once)
+				{
+				ofstream save_data("Copy.bat");
+				if (save_data.is_open())
+				{
+				save_data << luaDIR;
+				save_data << saved_lua_Output;
+				save_data << '\n';
+				save_data << outDIR;
+				save_data << save_Output_compiler;
+				save_data.close();
+				show_save_complete = true;}
+				}
+			}
 			ImGui::End();
 		}
 		if (show_options)
@@ -662,16 +683,20 @@ accept_source0_workspace3 = false;
             ImGui::Text("");
 			ImGui::Text("Written in C++, using Dev ++ with the TDM Mingw64 compiler.");
             ImGui::Text("Useing IMGUI API.");
-            ImGui::Text("");
+            ImGui::Text("Built for the purpose of making & testing scripts much easier.\n"
+						"Was using Notepad ++, while good still lacked functionality.\n"
+						"So this program was born.\n\n");
             ImGui::End();
         }
         if(show_help_support)
 		{
 			ImGui::Begin("Help & Support", &show_help_support,ImGuiWindowFlags_AlwaysHorizontalScrollbar);
 			ImGui::Text("LUA.Editor\n\n"
-			"Simply save a workspace to compile or run.");
+			"Usage :- \n"
+			"Simply save a workspace to compile or run.\n\n");
 			ImGui::Separator();
-			ImGui::Text("LUA interpreter\n\n");
+			ImGui::Text("LUA interpreter\n\n"
+						"Type in compiler console 'lua filename.lua' to test a script.\n\n");
 			ImGui::Text("lua is the stand-alone Lua interpreter. It loads and executes Lua programs, either in textual source form or in precompiled binary form.\n" 
 			"(Precompiled binaries are output by luac, the Lua compiler.) lua can be used as a batch interpreter and also interactively.\n\n"
 			"The given options (see below) are executed and then the Lua program in file script is loaded and executed. The given args are available to script as strings in a global table named arg.\n" 
@@ -718,6 +743,7 @@ accept_source0_workspace3 = false;
 					"luac [ options ] [ filenames ]");
 			ImGui::End();
 		}
+		
 ////////////////////////////////////////////////////////////
 //
 // Rendering

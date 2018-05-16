@@ -1,0 +1,30 @@
+FULLY FUNCTIONAL
+
+To test the program :-
+
+Click 'New' from Editor tools
+
+Choose 'Workspace 1' click 'ok'
+
+Copy & paste io.write("Hello World")
+
+Click 'Save' Check 'Workspace 1' and save as test.lua
+
+Click 'Compile' type lua test.lua and press enter.
+
+"Hello World" should be seen within the console.
+
+-----------------------------
+
+To test moving completed .lua/.out
+
+Click on 'Output Options' from Editor tools
+
+Configure directories
+
+Click 'Update batch' - This makes/updates Copy.bat
+
+Click on 'Run batch' from editor tools.
+
+                       
+					   

@@ -1,0 +1,37 @@
+Copy and paste into me.
+
+-----I am a Comment
+
+io.write("Hello World")
+
+and       break     do        
+else      elseif
+end       false     for       
+function  if
+in        local     nil       
+not       or
+repeat    return    then      
+true      until
+while
+
+ +     -     *     /     ^     =
+~=    <=    >=    <     >     ==
+(     )     {     }     [     ]
+;     :     ,     .     ..    ...
+
+\a --- bell
+\b --- backspace
+\f --- form feed
+\n --- newline
+\r --- carriage return
+\t --- horizontal tab
+\v --- vertical tab
+\\ --- backslash
+\" --- quotation mark
+\' --- apostrophe
+\[ --- left square bracket
+\] --- right square bracket
+
+
+                                  
+								                         
