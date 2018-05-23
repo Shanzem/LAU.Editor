@@ -37,4 +37,4 @@ Bugs fixed.
 
 Check source for details.
 
-https://github.com/ocornut/imgui/issues/1832
+
