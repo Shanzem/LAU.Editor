@@ -22,10 +22,15 @@ Features :-
 - Complete documentation
 
 
-Last TODO
+Last TODO - All WIP.
 											
-- Undo/redo?
-- Right click copy/paste In works =)
+- Undo/redo			
+- Right click copy/paste 
 - Gui save as / open window 
+- Debugger
+
+Bugs fixed.
+
+- Fixed bug with life.lua loading incorrectly because of special character.
 
 Check source for details.
