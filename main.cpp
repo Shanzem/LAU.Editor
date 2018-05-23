@@ -15,7 +15,15 @@
 #include <cstdlib>
 #include <string>
 #include <vector>
-
+/////////////////////////////////////////////////////////
+//
+//	Boost file system conflict with std library
+// 	Should of seen that comming :P
+//
+//	Header contains file open/save ^_^'
+//
+//	#include <boost/filesystem.hpp>
+//	using namespace boost::filesystem;
 
 
 
@@ -110,11 +118,11 @@ int main(int, char**)
     //io.Fonts->AddFontFromFileTTF("../../misc/fonts/ProggyTiny.ttf", 10.0f);
     //ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, NULL, io.Fonts->GetGlyphRangesJapanese());
     //IM_ASSERT(font != NULL);
+
 /////////////////////////////////////////////////////////////
 //
-//	Window bools
+//	Window bools.
 //
-
 ////////////////////////////////////////////////////////////
 bool show_editor_window 		= true;		// Editor options selector
 bool show_welcome				= true;		// Welcome screen/notes/changes loads out of "while"
@@ -128,11 +136,12 @@ bool show_help_support			= false;	// implement in program web browser?
 bool show_options				= false;	// Uses inbuilt imgui call
 bool show_IO					= false;	// Fully func
 bool show_batch					= false;	// Fully func
-bool show_debugger				= false;	// Wip
 bool show_prefab_list			= false;	// Ease of grabbing test scripts
 bool show_save_complete			= false;	// Clickable
 bool load_snippets				= true;		// Saveable / Loading called out of "while"
 bool show_right_click_menu		= false;	// WIP Feature
+bool guiopen					= false;	// WIP Open file explorer.
+bool guisave					= false;	// WIP Save file explorer.
 ////////////////////////////////////////////////////////////
 //
 // Windows and arrays.
@@ -140,14 +149,14 @@ bool show_right_click_menu		= false;	// WIP Feature
 bool Work_space_one				= false;
 bool Work_space_two				= false;
 bool Work_space_three			= false;
-
+bool menu						= true;
 
 static char Workspace1[1024*16];
 static char Workspace2[1024*16];
 static char Workspace3[1024*16];
 ////////////////////////////////////////////////////////////
 //
-// Welcome details
+// Welcome details.
 //
 static char Welcome[1024*16];
 static ImGuiOnceUponAFrame once;
@@ -166,7 +175,7 @@ static ImGuiOnceUponAFrame once;
 					}
 ////////////////////////////////////////////////////////////
 //
-//	Copy.bat
+//	Copy.bat.
 //
 static char luaDIR[1024] = "copy *.lua ";
 static char outDIR[1024] = "copy *.out ";
@@ -179,17 +188,21 @@ bool load_selected_two			= false;
 bool load_selected_three		= false;
 /////////////////////////////////////////////////////////////
 //
-// Save selection
+// Save selection.
 //
 bool save_selected_one			= false;
 bool save_selected_two			= false;
 bool save_selected_three		= false;
+
 /////////////////////////////////////////////////////////////
-//RGBA colour for screen.
+//
+//	RGBA colour for screen.
+//
 ImVec4 clear_color = ImVec4(0.073f, 0.115f, 0.177f, 1.000f);
 //////////////////////////////////////////////////////////////
 //
-//	Code snippets
+//	Code snippets.
+//
 static char Codesnippets[1024*16];
 
 static ImGuiOnceUponAFrame OnceAgain;
@@ -208,20 +221,22 @@ static ImGuiOnceUponAFrame OnceAgain;
 					}
 ////////////////////////////////////////////////////////////////////////////////
 //
-//	ICONS
+//	ICONS.
 //
 ///////////////////////////////////////////////////////////////
-static LPDIRECT3DTEXTURE9       filenew = NULL;		// image idents here. here =)
-static LPDIRECT3DTEXTURE9       fileopen = NULL;
-static LPDIRECT3DTEXTURE9       filesave = NULL;
-static LPDIRECT3DTEXTURE9       settings = NULL;
-static LPDIRECT3DTEXTURE9       IO = NULL;
-static LPDIRECT3DTEXTURE9       compile = NULL;
-static LPDIRECT3DTEXTURE9       run = NULL;
-static LPDIRECT3DTEXTURE9       source = NULL;
-static LPDIRECT3DTEXTURE9       help = NULL;
-static LPDIRECT3DTEXTURE9       Editor = NULL;
-static LPDIRECT3DTEXTURE9       batch = NULL;
+static LPDIRECT3DTEXTURE9       filenew 	= NULL;		// image idents here. here =)
+static LPDIRECT3DTEXTURE9       fileopen 	= NULL;
+static LPDIRECT3DTEXTURE9       filesave 	= NULL;
+static LPDIRECT3DTEXTURE9       settings 	= NULL;
+static LPDIRECT3DTEXTURE9       IO 			= NULL;
+static LPDIRECT3DTEXTURE9       compile 	= NULL;
+static LPDIRECT3DTEXTURE9       run 		= NULL;
+static LPDIRECT3DTEXTURE9       source 		= NULL;
+static LPDIRECT3DTEXTURE9       help 		= NULL;
+static LPDIRECT3DTEXTURE9       Editor 		= NULL;
+static LPDIRECT3DTEXTURE9       batch 		= NULL;
+static LPDIRECT3DTEXTURE9       up 			= NULL;
+
 D3DXCreateTextureFromFile( g_pd3dDevice, "filenew.png" ,	 &filenew );			// image file grabs here :)
 D3DXCreateTextureFromFile( g_pd3dDevice, "fileopen.png" ,	 &fileopen );
 D3DXCreateTextureFromFile( g_pd3dDevice, "filesave.png" ,	 &filesave );
@@ -233,6 +248,7 @@ D3DXCreateTextureFromFile( g_pd3dDevice, "compilerun.png" ,	 &run );
 D3DXCreateTextureFromFile( g_pd3dDevice, "runbatch.png" ,	 &batch );
 D3DXCreateTextureFromFile( g_pd3dDevice, "addition.png" ,	 &help );
 D3DXCreateTextureFromFile( g_pd3dDevice, "LUA.Editor.png" ,	 &Editor );
+D3DXCreateTextureFromFile( g_pd3dDevice, "up.png" ,	 		 &up );
 //////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////
 
@@ -257,12 +273,15 @@ D3DXCreateTextureFromFile( g_pd3dDevice, "LUA.Editor.png" ,	 &Editor );
         ImGui_ImplDX9_NewFrame();             // IT ALL STARTS HERE
 //////////////////////////////////////////////////////////////
 //
-//	Mouse WIP COPY/PASTE
+//	Mouse WIP COPY/PASTE.
 //
+
 static char right_click_selection[40];
 static int right_menu_selection = -1;
 
-if(ImGui::IsMouseClicked( 1,true))
+
+
+		if(ImGui::IsMouseClicked( 1,true))
 		{
 				static ImGuiOnceUponAFrame fourth;
 				if (fourth)
@@ -282,102 +301,144 @@ if(ImGui::IsMouseClicked( 1,true))
 		{
 			ImVec2 base_pos = ImGui::GetMousePos();
 			ImGui::SetNextWindowPos(ImVec2(base_pos.x,base_pos.y),ImGuiCond_Appearing);
-			ImGui::SetNextWindowSize(ImVec2(100,63));
+			ImGui::SetNextWindowSize(ImVec2(100,105));
 			ImGui::Begin("###rightmenu", &show_right_click_menu,ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
 			ImGui::BeginChild("####rightmenu", ImVec2(-1,-1), true,ImGuiWindowFlags_NoScrollbar);
             sprintf(right_click_selection, "  Copy", 1);
-            if (ImGui::Selectable(right_click_selection, right_menu_selection == 1 )){right_menu_selection = 1; show_right_click_menu = false;}
-			
-			 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////        
+            if (ImGui::Selectable(right_click_selection, right_menu_selection == 1 ))
+////////////////////////////////////////////////////////////////////
 //
-// 	Dissect & get working .. COPY code. PASTE below.
-//            
-//			if (io.SetClipboardTextFn)
-//            {
-//                const int ib = edit_state.HasSelection() ? ImMin(edit_state.StbState.select_start, edit_state.StbState.select_end) : 0;
-//                const int ie = edit_state.HasSelection() ? ImMax(edit_state.StbState.select_start, edit_state.StbState.select_end) : edit_state.CurLenW;
-//                edit_state.TempTextBuffer.resize((ie-ib) * 4 + 1);
-//                ImTextStrToUtf8(edit_state.TempTextBuffer.Data, edit_state.TempTextBuffer.Size, edit_state.Text.Data+ib, edit_state.Text.Data+ie);
-//                SetClipboardText(edit_state.TempTextBuffer.Data);
-//            }
+//	Still WIP instead of reinventing the wheel. Forceing CTRL+C hot.
+//	Imgui`s built in copy function should pick the key combination up. 
+//	Same for paste operation. CTRL+V hot.
 //
-//////////////////////////////////////////////////////////////////////			
+//	However proveing maddeningly difficult!
+//	Will have to post a issue note on github.
 //
-// 	PASTE code. 
+//	Can also achieve the same with Redo/Undo.
 //
-//            if (const char* clipboard = GetClipboardText())
-//            {
-//                // Filter pasted buffer
-//                const int clipboard_len = (int)strlen(clipboard);
-//                ImWchar* clipboard_filtered = (ImWchar*)ImGui::MemAlloc((clipboard_len+1) * sizeof(ImWchar));
-//                int clipboard_filtered_len = 0;
-//                for (const char* s = clipboard; *s; )
-//                {
-//                    unsigned int c;
-//                    s += ImTextCharFromUtf8(&c, s, NULL);
-//                    if (c == 0)
-//                        break;
-//                    if (c >= 0x10000 || !InputTextFilterCharacter(&c, flags, callback, user_data))
-//                        continue;
-//                    clipboard_filtered[clipboard_filtered_len++] = (ImWchar)c;
-//                }
-//                clipboard_filtered[clipboard_filtered_len] = 0;
-//                if (clipboard_filtered_len > 0) // If everything was filtered, ignore the pasting operation
-//                {
-//                    stb_textedit_paste(&edit_state, &edit_state.StbState, clipboard_filtered, clipboard_filtered_len);
-//                    edit_state.CursorFollow = true;
-//                }
-//                ImGui::MemFree(clipboard_filtered);
-//            }
+//	Keys CTRL+Y: redo & CTRL+Z: undo.
 //
-///////////////////////////////////////////////////////////////////////////			
-			
-			
+//	Failed attemps below BUT keeping for github question to Omar Cornut.
+
+			{
+			right_menu_selection = 1; //show_right_click_menu = false;
+			//ImGui::GetIO().KeyCtrl == true and ImGuiKey_C == true;
+			//ImGui::IsKeyDown(ImGuiKey_C) == true;
+			//IsKeyPressedMap(ImGuiKey_C) = true; 
+			//ImGuiKey_C == true;
+			//ImGuiIO.KeyCtrl = true;ImGuiIO.KeysDown = ImGuiKey_C = true;
+			}
 			ImGui::Separator();
 			sprintf(right_click_selection, "  Paste", 2);
             if (ImGui::Selectable(right_click_selection, right_menu_selection == 2 )){right_menu_selection = 2;} 
-   			ImGui::EndChild();
+   			ImGui::Separator();
+			sprintf(right_click_selection, "  Redo", 3);
+            if (ImGui::Selectable(right_click_selection, right_menu_selection == 3 )){right_menu_selection = 3;} 
+   			ImGui::Separator();
+			sprintf(right_click_selection, "  Undo", 4);
+            if (ImGui::Selectable(right_click_selection, right_menu_selection == 4 )){right_menu_selection = 4;} 
+   			
+			ImGui::EndChild();
 			ImGui::End();
 		}										
 //////////////////////////////////////////////////////////////
 //
-//	Needed for check boxes and selectables
+//	Needed for check boxes and selectables.
 //
 static char new_wizard_selection_workspace[40];
 static int selectedworkspace = -1;
 
 /////////////////////////////////////////////////////////////
 //
-//	Workspace window create
+//	Workspace window create. WIP Changing layout, adding menu bars.
 //
+//	Workspace #1
+
 
 if (Work_space_one)
 {
-ImGui::Begin("Workspace #1", &Work_space_one);
-ImGui::InputTextMultiline("##Workspace1", Workspace1, IM_ARRAYSIZE(Workspace1), ImVec2(-1.0f, -1.0 * 16), ImGuiInputTextFlags_AllowTabInput);
+ImGui::Begin("Workspace #1", &Work_space_one, ImGuiWindowFlags_MenuBar);
+	if (ImGui::BeginMenuBar())
+	{
+	if (ImGui::BeginMenu("Options"))
+		{
+    		ImGui::MenuItem("  Clear", NULL);
+    		if(ImGui::BeginMenu("  Insert"))
+    		{
+    			ImGui::MenuItem("Box comment", NULL);
+    			ImGui::MenuItem("Time & Date", NULL);
+    			ImGui::EndMenu();
+			}
+    		if (ImGui::MenuItem("  Save", NULL)){show_save = true;}
+    		if (ImGui::MenuItem("  Load", NULL)){show_open = true;}
+    		ImGui::EndMenu();
+		}
+	ImGui::EndMenuBar();
+	}
+ImGui::InputTextMultiline("##Workspace1", Workspace1, IM_ARRAYSIZE(Workspace1), ImVec2(-1.0f, -1.0 * 16), ImGuiInputTextFlags_AllowTabInput );
 ImGui::End();
 }
+
+//	Workspace #2
+
+
 if (Work_space_two)
 {
-ImGui::Begin("Workspace #2", &Work_space_two);
+ImGui::Begin("Workspace #2", &Work_space_two,ImGuiWindowFlags_MenuBar);
 ImGui::InputTextMultiline("##Workspace2", Workspace2, IM_ARRAYSIZE(Workspace2), ImVec2(-1.0f, -1.0 * 16), ImGuiInputTextFlags_AllowTabInput);
+	if (ImGui::BeginMenuBar())
+	{
+	if (ImGui::BeginMenu("Options"))
+		{
+    		ImGui::MenuItem("  Clear", NULL);
+    		if(ImGui::BeginMenu("  Insert"))
+    		{
+    			ImGui::MenuItem("Box comment", NULL);
+    			ImGui::MenuItem("Time & Date", NULL);
+    			ImGui::EndMenu();
+			}
+    		if (ImGui::MenuItem("  Save", NULL)){show_save = true;}
+    		if (ImGui::MenuItem("  Load", NULL)){show_open = true;}
+    		ImGui::EndMenu();
+		}
+	ImGui::EndMenuBar();
+	}
 ImGui::End();
 }
+
+//	Workspace #3
+
+
 if (Work_space_three)
 {
-ImGui::Begin("Workspace #3", &Work_space_three);
+ImGui::Begin("Workspace #3", &Work_space_three,ImGuiWindowFlags_MenuBar);
 ImGui::InputTextMultiline("##Workspace3", Workspace3, IM_ARRAYSIZE(Workspace3), ImVec2(-1.0f, -1.0 * 16), ImGuiInputTextFlags_AllowTabInput);
+	if (ImGui::BeginMenuBar())
+	{
+	if (ImGui::BeginMenu("Options"))
+		{
+    		ImGui::MenuItem("  Clear", NULL);
+    		if(ImGui::BeginMenu("  Insert"))
+    		{
+    			ImGui::MenuItem("Box comment", NULL);
+    			ImGui::MenuItem("Time & Date", NULL);
+    			ImGui::EndMenu();
+			}
+    		if (ImGui::MenuItem("  Save", NULL)){show_save = true;}
+    		if (ImGui::MenuItem("  Load", NULL)){show_open = true;}
+    		ImGui::EndMenu();
+		}
+	ImGui::EndMenuBar();
+	}
 ImGui::End();
 }
 
 /////////////////////////////////////////////////////////////
 //
-//	Editor and other windows
+//	Editor and other windows.
 //
 
-	
-		
 		show_editor_window 	= true;
 		if (show_welcome)
 		{
@@ -511,6 +572,7 @@ ImGui::End();
 			ImGui::Begin("Open", &show_open);
 			ImGui::Text("To open a file\n\n"
 			"place script in the same location as LUA.Editor.exe\n\n"
+			"Or navigate to the file using the UI button.\n"
 			"Choose a Workspace to load the script into.\n\n"
 			"Do not forget to add file extension.  .txt/.lua");
 			ImGui::Separator();
@@ -523,26 +585,28 @@ ImGui::End();
 			ImGui::InputText("#####open", load_file, IM_ARRAYSIZE(load_file), ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_AutoSelectAll);
             ImGui::Separator();
 			if (ImGui::Button("Open"))
+			{
+				static ImGuiOnceUponAFrame once;
+				if (once)
 				{
-					static ImGuiOnceUponAFrame once;
-					if (once)
-					{
-					if (load_selected_one == true && Work_space_one	== true)
-					{ifstream file(load_name.c_str(), ios::in|ios::ate);if (file.is_open()){streampos size;size = file.tellg();file.seekg (0, ios::beg);file.read (Workspace1, size);file.close();}}
-				
-					if (load_selected_two == true && Work_space_two	== true)
-					{ifstream file(load_name.c_str(), ios::in|ios::ate);if (file.is_open()){streampos size;size = file.tellg();file.seekg (0, ios::beg);file.read (Workspace2, size);file.close();}}
 					
-					if (load_selected_three == true && Work_space_three == true)
-					{ifstream file(load_name.c_str(), ios::in|ios::ate);if (file.is_open()){streampos size;size = file.tellg();file.seekg (0, ios::beg);file.read (Workspace3, size);file.close();}}
-					}
+				if (load_selected_one == true && Work_space_one	== true)
+				{ifstream file(load_name.c_str(), ios::in|ios::ate);if (file.is_open()){streampos size;size = file.tellg();file.seekg (0, ios::beg);file.read (Workspace1, size);file.close();}}
+			
+				if (load_selected_two == true && Work_space_two	== true)
+				{ifstream file(load_name.c_str(), ios::in|ios::ate);if (file.is_open()){streampos size;size = file.tellg();file.seekg (0, ios::beg);file.read (Workspace2, size);file.close();}}
+				
+				if (load_selected_three == true && Work_space_three == true)
+				{ifstream file(load_name.c_str(), ios::in|ios::ate);if (file.is_open()){streampos size;size = file.tellg();file.seekg (0, ios::beg);file.read (Workspace3, size);file.close();}}
+				
 				}
+			}
+			ImGui::SameLine();
+			if(ImGui::Button("UI Open"))
+			{guiopen = true;}
 			ImGui::SameLine();
 			if(ImGui::Button("Prefab"))
-			{
-				show_prefab_list = true;
-				
-			}
+			{show_prefab_list = true;}
 			ImGui::End();
 		}
 		
@@ -551,6 +615,7 @@ ImGui::End();
 			ImGui::Begin("Save as", &show_save);
 			ImGui::Text("Type a save filename\n"
 			"Saved to the same location as LUA.Editor.exe\n\n"
+			"Or use the navigate UI to directly save to a location.\n"
 			"Do not forget to add extension .txt/.lua\n\n"
 			"Choose a Workspace to save.\n");
 			ImGui::Separator();
@@ -575,13 +640,15 @@ ImGui::End();
 					if(save_selected_three == true){ofstream save_data(save_name.c_str());if (save_data.is_open()){save_data << Workspace3;save_data.close();show_save_complete = true;}}
 				}
 			}
+			ImGui::SameLine();
+			if(ImGui::Button("UI Open"))
+			{guisave = true;}
 			ImGui::End();
 		}
 		if (show_save_complete)
 		{
 			ImGui::Begin("###saved", &show_save_complete);
 			if(ImGui::Button("SAVED",ImVec2(-1,-1))) {show_save_complete = false;}
-			
 			ImGui::End();
 		}
 		if (show_prefab_list)
@@ -640,7 +707,6 @@ ImGui::End();
 			static char save_Output_complation[1024] = "C:\\%DIR%";    // setup text filtering, could be in latest update.
             string save_Output_compiler = save_Output_complation;							
 			ImGui::Text("Compiler output folder - Where you wish the .out scripts to be moved to.");
-										
 			ImGui::InputText("###save_Output_complation", save_Output_complation, IM_ARRAYSIZE(save_Output_complation), ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_AutoSelectAll);
             ImGui::SameLine();
             ImGui::Button("Save");
@@ -743,10 +809,109 @@ ImGui::End();
 					"luac [ options ] [ filenames ]");
 			ImGui::End();
 		}
-		
-////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
 //
-// Rendering
+//	WIP ui open/save file explorer using boost file system.
+//	Should be able to add a small folder icon to represent directories.
+//	Same also for .txt/.lua/.out files.
+//
+//	No boost added yet need further documentation. will be 1.6.7  
+//	Also means i have a generic save/load ui to copy & paste into
+//	other projects.
+//
+		if (guiopen)
+		{
+			ImGui::Begin("Generic open file explorer", &guiopen);
+			ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 5.0f);
+			ImGui::BeginChild("####leftpanel", ImVec2(50,300), true);
+			ImGui::Text("");
+			ImGui::Separator();
+			ImGui::Separator();
+			ImGui::EndChild();
+			ImGui::SameLine();
+			ImGui::BeginChild("####openviewer", ImVec2(-1,300), true);
+			if(ImGui::ImageButton((void *)up, ImVec2(15, 15), ImVec2(0,0),ImVec2(1,1),0,ImVec4(0,0,0,0),ImVec4(255,255,255,255))){}
+            if (ImGui::IsItemHovered()){ImGui::BeginTooltip();ImGui::Text("Up");ImGui::EndTooltip();}
+			ImGui::SameLine();
+			ImGui::Text("C:\\home");
+			ImGui::Separator();
+			ImGui::Separator();
+			ImGui::EndChild();
+			ImGui::BeginChild("####bottompanel", ImVec2(300,58), true);
+			ImGui::Text("");
+			ImGui::PushItemWidth(-1);
+			ImGui::SameLine();
+			static char open_file[40] = "";
+			ImGui::InputText("###open_file", open_file, IM_ARRAYSIZE(open_file), ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_AutoSelectAll);
+			ImGui::Text("");
+			ImGui::SameLine();
+////////////////////////////////////////////////////////////////////
+//
+//	Filters output display.
+//
+			static int filetype = -1;
+			ImGui::Combo("####dummyme",&filetype," \0.txt\0.lua\0", 3);
+			ImGui::PopItemWidth();
+			ImGui::EndChild();
+///////////////////////////////////////////////////////////////////
+			ImGui::SameLine();
+			ImGui::BeginChild("####bottompanelopen", ImVec2(-1,58), true);
+			ImGui::Button("Open",ImVec2(80,40));
+			ImGui::SameLine();
+			ImGui::Button("Info",ImVec2(80,40));
+			ImGui::EndChild();
+			ImGui::PopStyleVar();
+  			ImGui::End();
+		}
+		
+		if (guisave)
+		{
+			ImGui::Begin("Generic save file explorer", &guisave);
+			ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 5.0f);
+			ImGui::BeginChild("####leftpanel", ImVec2(50,300), true);
+			ImGui::Text("");
+			ImGui::Separator();
+			ImGui::Separator();
+			ImGui::EndChild();
+			ImGui::SameLine();
+			ImGui::BeginChild("####openviewer", ImVec2(-1,300), true);
+			if(ImGui::ImageButton((void *)up, ImVec2(15, 15), ImVec2(0,0),ImVec2(1,1),0,ImVec4(0,0,0,0),ImVec4(255,255,255,255))){}
+            if (ImGui::IsItemHovered()){ImGui::BeginTooltip();ImGui::Text("Up");ImGui::EndTooltip();}
+			ImGui::SameLine();
+			ImGui::Text("C:\\home");
+			ImGui::Separator();
+			ImGui::Separator();
+			ImGui::EndChild();
+			ImGui::BeginChild("####bottompanel", ImVec2(300,58), true);
+			ImGui::Text("");
+			ImGui::PushItemWidth(-1);
+			ImGui::SameLine();
+			static char open_file[40] = "";
+			ImGui::InputText("###save_file", open_file, IM_ARRAYSIZE(open_file), ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_AutoSelectAll);
+			ImGui::Text("");
+			ImGui::SameLine();
+//////////////////////////////////////////////////////////////////////
+//
+//	Save type.
+//
+			static int filetype = -1;
+			ImGui::Combo("####dummyme",&filetype," \0.txt\0.lua\0", 3);
+			ImGui::PopItemWidth();
+			ImGui::EndChild();
+//////////////////////////////////////////////////////////////////////
+			ImGui::SameLine();
+			ImGui::BeginChild("####bottompanelopen", ImVec2(-1,58), true);
+			ImGui::Button("Save",ImVec2(80,40));
+			ImGui::SameLine();
+			ImGui::Button("Info",ImVec2(80,40));
+			ImGui::EndChild();
+			ImGui::PopStyleVar();
+  			ImGui::End();
+		}
+
+////////////////////////////////////////////////////////////////////////
+//
+// Rendering.
 //
 ///////////////////////////////////////////////////////////
         ImGui::EndFrame();
