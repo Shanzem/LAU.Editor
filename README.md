@@ -27,10 +27,14 @@ Last TODO - All WIP.
 - Undo/redo			
 - Right click copy/paste 
 - Gui save as / open window 
-- Debugger
+
+Good news =) https://github.com/ocornut/imgui/issues/1832 
+forced a change.
 
 Bugs fixed.
 
 - Fixed bug with life.lua loading incorrectly because of special character.
 
 Check source for details.
+
+https://github.com/ocornut/imgui/issues/1832
