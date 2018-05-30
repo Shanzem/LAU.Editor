@@ -26,15 +26,23 @@ Last TODO - All WIP.
 											
 - Undo/redo			
 - Right click copy/paste 
-- Gui save as / open window 
-
-Good news =) https://github.com/ocornut/imgui/issues/1832 
-forced a change.
+- Gui save as / open window
+- Web browser should read HTML 1.0 (text) using boost:ASIO. CHECK SOURCE! STILL SKELLY
+- Web browser settings uses batch for ipconfig
+- Web browser really needs HTML 4.0 or better. SDK maybe?
+- Issue with WindowFocus(); on Editor tools window causing tooltip flicker.
+- Will probably need freeimage for the web browser for image format support.
+- Need to rewrite save/load code for boost (eughh :|)
 
 Bugs fixed.
 
 - Fixed bug with life.lua loading incorrectly because of special character.
 
-Check source for details.
+Ponders
 
+- Can i use a combination of boost asio/filesystem for FTP client?
+- Could i also do the same for cloud access?
+- Going to add folders for github. move pics & templates into them.
+- Make a tcp server imgui app with networking tools & webpage/ftp folder - that would be neat.
 
+Check source for details & notes.
