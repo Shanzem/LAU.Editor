@@ -1,6 +1,9 @@
 // ImGui - standalone example application for DirectX 9
 // If you are new to ImGui, see examples/README.txt and documentation at the top of imgui.cpp.
 
+
+
+//#include <boost/asio/ip/tcp.hpp>
 #include "imgui.h"
 #include "imgui_impl_dx9.h"
 #include <d3d9.h>
@@ -15,16 +18,125 @@
 #include <cstdlib>
 #include <string>
 #include <vector>
+
 /////////////////////////////////////////////////////////
 //
 //	Boost file system conflict with std library
 // 	Should of seen that comming :P
 //
 //	Header contains file open/save ^_^'
+//	This means rewriting load/save code.
 //
 //	#include <boost/filesystem.hpp>
 //	using namespace boost::filesystem;
-
+//
+///////////////////////////////////////////////////////
+//
+//	Boost::Asio
+//
+//	#include <boost/asio/ip/tcp.hpp>
+//
+//	Basic networking component, it handles tcp/ip.
+//	also supoort for other socket protocols 
+//	(such as Bluetooth or IRCOMM sockets)
+//
+//	This will get me HTTP 1.0 support (Text)
+//	Below is the full http_client source code.
+//
+//	Slowly reworking this into my Minimal browser.
+//	
+//	Current problem :
+//
+//	undefined reference to `_imp__WSACleanup@0'
+//
+//	Odd statics linked for dependencies.
+//
+//	
+//
+//////////////////////////////////////////////////////
+//
+//	Source for http client. to Dissect and integrate.
+//
+/////////////////////////////////////////////////////
+//
+//
+//using boost::asio::ip::tcp;
+//
+//int main(int argc, char* argv[])
+//{
+//  try
+//  {
+//    if (argc != 3)
+//    {
+//      std::cout << "Usage: http_client <server> <path>\n";
+//      std::cout << "Example:\n";
+//      std::cout << "  http_client www.boost.org /LICENSE_1_0.txt\n";
+//      return 1;
+//    }
+//
+//    boost::asio::ip::tcp::iostream s; 
+//
+//    // The entire sequence of I/O operations must complete within 60 seconds.
+//    // If an expiry occurs, the socket is automatically closed and the stream
+//    // becomes bad.
+//    s.expires_after(std::chrono::seconds(60));
+//
+//    // Establish a connection to the server.
+//    s.connect(argv[1], "http");
+//    if (!s)
+//    {
+//      std::cout << "Unable to connect: " << s.error().message() << "\n";
+//      return 1;
+//    }
+//
+//    // Send the request. We specify the "Connection: close" header so that the
+//    // server will close the socket after transmitting the response. This will
+//    // allow us to treat all data up until the EOF as the content.
+//    s << "GET " << argv[2] << " HTTP/1.0\r\n";
+//    s << "Host: " << argv[1] << "\r\n";
+//    s << "Accept: */*\r\n";
+//    s << "Connection: close\r\n\r\n";
+//
+//    // By default, the stream is tied with itself. This means that the stream
+//    // automatically flush the buffered output before attempting a read. It is
+//    // not necessary not explicitly flush the stream at this point.
+//
+//    // Check that response is OK.
+//    std::string http_version;
+//    s >> http_version;
+//    unsigned int status_code;
+//    s >> status_code;
+//    std::string status_message;
+//    std::getline(s, status_message);
+//    if (!s || http_version.substr(0, 5) != "HTTP/")
+//    {
+//      std::cout << "Invalid response\n";
+//      return 1;
+//    }
+//    if (status_code != 200)
+//    {
+//      std::cout << "Response returned with status code " << status_code << "\n";
+//      return 1;
+//    }
+//
+//    // Process the response headers, which are terminated by a blank line.
+//    std::string header;
+//    while (std::getline(s, header) && header != "\r")
+//      std::cout << header << "\n";
+//    std::cout << "\n";
+//
+//    // Write the remaining data to output.
+//    std::cout << s.rdbuf();
+//  }
+//  catch (std::exception& e)
+//  {
+//    std::cout << "Exception: " << e.what() << "\n";
+//  }
+//
+//  return 0;
+//}
+//
+///////////////////////////////////////////////////////
 
 
 
@@ -124,24 +236,59 @@ int main(int, char**)
 //	Window bools.
 //
 ////////////////////////////////////////////////////////////
-bool show_editor_window 		= true;		// Editor options selector
-bool show_welcome				= true;		// Welcome screen/notes/changes loads out of "while"
-bool show_about_editor			= false;	// Blurb
-bool show_new_wizard			= false;	// Uses prefabs via loading
-bool show_compiler				= false;	// Standard cmd call
-bool show_run					= false;	// Runs Lua
-bool show_save					= false;	// Fully func
-bool show_open					= false;	// Fully func
-bool show_help_support			= false;	// implement in program web browser?
-bool show_options				= false;	// Uses inbuilt imgui call
-bool show_IO					= false;	// Fully func
-bool show_batch					= false;	// Fully func
-bool show_prefab_list			= false;	// Ease of grabbing test scripts
-bool show_save_complete			= false;	// Clickable
-bool load_snippets				= true;		// Saveable / Loading called out of "while"
-bool show_right_click_menu		= false;	// WIP Feature
-bool guiopen					= false;	// WIP Open file explorer.
-bool guisave					= false;	// WIP Save file explorer.
+bool show_editor_window 		= true;			// Editor options selector
+bool show_welcome				= true;			// Welcome screen/notes/changes loads out of "while"
+bool show_about_editor			= false;		// Blurb
+bool show_new_wizard			= false;		// Uses prefabs via loading
+bool show_compiler				= false;		// Standard cmd call
+bool show_run					= false;		// Runs Lua
+bool show_save					= false;		// Fully func
+bool show_open					= false;		// Fully func
+bool show_help_support			= false;		// implement in program web browser?
+bool show_options				= false;		// Uses inbuilt imgui call
+bool show_IO					= false;		// Fully func
+bool show_batch					= false;		// Fully func
+bool show_prefab_list			= false;		// Ease of grabbing test scripts
+bool show_save_complete			= false;		// Clickable
+bool load_snippets				= true;			// Saveable / Loading called out of "while"
+bool show_right_click_menu		= false;		// WIP Feature
+bool show_guiopen				= false;		// WIP Open file explorer.
+bool show_guisave				= false;		// WIP Save file explorer.
+bool show_inprogram_dbg			= false;		// Debugger for web browser.
+////////////////////////////////////////////////////////////
+//
+// Web browser bool & functionality.
+//
+//
+bool show_web_browser			= false;		// WIP beast locksup my IDE! / ASIO seems to work.
+bool show_web_settings			= false;		// Homepage/Downloads location/ssl/ftp/others
+bool save_ftp_login				= false;		// Saved as binary fileformat.
+bool mobile_html				= false;		// Mobile phone HTML only. look into me more.
+bool status_empty				= true;			// Connection status indicators.
+bool status_red					= false;		// "
+bool status_yellow				= false;		// "
+bool status_green				= false;		// "
+bool save_cloud_login			= false;		// Saved as binary fileformat.
+bool show_download_manager		= false;		// Used for upstream/downstream progress.
+bool show_bookmarks_saved		= false;		// Displays user defined bookmarks
+
+static char bookmarks_kept[1024*16];			// Bookmarks for browser.
+
+
+static ImGuiOnceUponAFrame Browser_settings;	// Bookmarks & browser settings.
+				if (Browser_settings)			// Will have to use my regex load here to parse data.
+					{
+            			ifstream file("Bookmarks.setting", ios::in|ios::ate);
+            			if (file.is_open())
+            				{						
+							streampos size;			
+					  		size = file.tellg();
+							file.seekg (0, ios::beg);
+							file.read (bookmarks_kept, size);
+							file.close();
+							}
+					}
+
 ////////////////////////////////////////////////////////////
 //
 // Windows and arrays.
@@ -149,7 +296,6 @@ bool guisave					= false;	// WIP Save file explorer.
 bool Work_space_one				= false;
 bool Work_space_two				= false;
 bool Work_space_three			= false;
-bool menu						= true;
 
 static char Workspace1[1024*16];
 static char Workspace2[1024*16];
@@ -171,7 +317,6 @@ static ImGuiOnceUponAFrame once;
 							file.read (Welcome, size);
 							file.close();
 							}
-							
 					}
 ////////////////////////////////////////////////////////////
 //
@@ -217,25 +362,38 @@ static ImGuiOnceUponAFrame OnceAgain;
 							file.read (Codesnippets, size);
 							file.close();
 							}
-							
 					}
 ////////////////////////////////////////////////////////////////////////////////
 //
 //	ICONS.
 //
 ///////////////////////////////////////////////////////////////
-static LPDIRECT3DTEXTURE9       filenew 	= NULL;		// image idents here. here =)
-static LPDIRECT3DTEXTURE9       fileopen 	= NULL;
-static LPDIRECT3DTEXTURE9       filesave 	= NULL;
-static LPDIRECT3DTEXTURE9       settings 	= NULL;
-static LPDIRECT3DTEXTURE9       IO 			= NULL;
-static LPDIRECT3DTEXTURE9       compile 	= NULL;
-static LPDIRECT3DTEXTURE9       run 		= NULL;
-static LPDIRECT3DTEXTURE9       source 		= NULL;
-static LPDIRECT3DTEXTURE9       help 		= NULL;
-static LPDIRECT3DTEXTURE9       Editor 		= NULL;
-static LPDIRECT3DTEXTURE9       batch 		= NULL;
-static LPDIRECT3DTEXTURE9       up 			= NULL;
+static LPDIRECT3DTEXTURE9       filenew 		= NULL;		// image idents here. here =)
+static LPDIRECT3DTEXTURE9       fileopen 		= NULL;
+static LPDIRECT3DTEXTURE9       filesave 		= NULL;
+static LPDIRECT3DTEXTURE9       settings 		= NULL;
+static LPDIRECT3DTEXTURE9       IO 				= NULL;
+static LPDIRECT3DTEXTURE9       compile 		= NULL;
+static LPDIRECT3DTEXTURE9       run 			= NULL;
+static LPDIRECT3DTEXTURE9       source 			= NULL;
+static LPDIRECT3DTEXTURE9       help 			= NULL;
+static LPDIRECT3DTEXTURE9       Editor 			= NULL;
+static LPDIRECT3DTEXTURE9       batch 			= NULL;
+static LPDIRECT3DTEXTURE9       up 				= NULL;
+static LPDIRECT3DTEXTURE9       web 			= NULL;
+static LPDIRECT3DTEXTURE9       home 			= NULL;
+static LPDIRECT3DTEXTURE9       back 			= NULL;
+static LPDIRECT3DTEXTURE9       forward 		= NULL;
+static LPDIRECT3DTEXTURE9       stop	 		= NULL;
+static LPDIRECT3DTEXTURE9       downloads		= NULL;
+static LPDIRECT3DTEXTURE9       bookmarks		= NULL;
+static LPDIRECT3DTEXTURE9       statusempty		= NULL;
+static LPDIRECT3DTEXTURE9       statusred		= NULL;
+static LPDIRECT3DTEXTURE9       statusyellow	= NULL;
+static LPDIRECT3DTEXTURE9       statusgreen		= NULL;
+static LPDIRECT3DTEXTURE9       pause			= NULL;
+static LPDIRECT3DTEXTURE9       contiune		= NULL;
+
 
 D3DXCreateTextureFromFile( g_pd3dDevice, "filenew.png" ,	 &filenew );			// image file grabs here :)
 D3DXCreateTextureFromFile( g_pd3dDevice, "fileopen.png" ,	 &fileopen );
@@ -249,6 +407,22 @@ D3DXCreateTextureFromFile( g_pd3dDevice, "runbatch.png" ,	 &batch );
 D3DXCreateTextureFromFile( g_pd3dDevice, "addition.png" ,	 &help );
 D3DXCreateTextureFromFile( g_pd3dDevice, "LUA.Editor.png" ,	 &Editor );
 D3DXCreateTextureFromFile( g_pd3dDevice, "up.png" ,	 		 &up );
+D3DXCreateTextureFromFile( g_pd3dDevice, "web.png" ,	 	 &web );
+D3DXCreateTextureFromFile( g_pd3dDevice, "home.png" ,	 	 &home );
+D3DXCreateTextureFromFile( g_pd3dDevice, "back.png" ,	 	 &back );
+D3DXCreateTextureFromFile( g_pd3dDevice, "forward.png" ,	 &forward );
+D3DXCreateTextureFromFile( g_pd3dDevice, "stop.png" ,		 &stop );
+D3DXCreateTextureFromFile( g_pd3dDevice, "downloads.png" ,	 &downloads );
+D3DXCreateTextureFromFile( g_pd3dDevice, "bookmarks.png" ,	 &bookmarks );
+D3DXCreateTextureFromFile( g_pd3dDevice, "statusempty.png" , &statusempty );
+D3DXCreateTextureFromFile( g_pd3dDevice, "statusred.png" , 	 &statusred );
+D3DXCreateTextureFromFile( g_pd3dDevice, "statusyellow.png" ,&statusyellow );
+D3DXCreateTextureFromFile( g_pd3dDevice, "statusgreen.png" , &statusgreen );
+D3DXCreateTextureFromFile( g_pd3dDevice, "pause.png" , 		 &pause );
+D3DXCreateTextureFromFile( g_pd3dDevice, "run.png" , 		 &contiune );
+
+
+
 //////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////
 
@@ -278,8 +452,6 @@ D3DXCreateTextureFromFile( g_pd3dDevice, "up.png" ,	 		 &up );
 
 static char right_click_selection[40];
 static int right_menu_selection = -1;
-
-
 
 		if(ImGui::IsMouseClicked( 1,true))
 		{
@@ -344,7 +516,7 @@ static int right_menu_selection = -1;
 		}										
 //////////////////////////////////////////////////////////////
 //
-//	Needed for check boxes and selectables.
+//	New Wizard check boxes & selectables.
 //
 static char new_wizard_selection_workspace[40];
 static int selectedworkspace = -1;
@@ -352,31 +524,40 @@ static int selectedworkspace = -1;
 /////////////////////////////////////////////////////////////
 //
 //	Workspace window create. WIP Changing layout, adding menu bars.
-//
+//	
 //	Workspace #1
 
 
 if (Work_space_one)
 {
 ImGui::Begin("Workspace #1", &Work_space_one, ImGuiWindowFlags_MenuBar);
+ImGui::InputTextMultiline("##Workspace1", Workspace1, IM_ARRAYSIZE(Workspace1), ImVec2(-1.0f, -1.0 * 16), ImGuiInputTextFlags_AllowTabInput );
 	if (ImGui::BeginMenuBar())
 	{
 	if (ImGui::BeginMenu("Options"))
 		{
-    		ImGui::MenuItem("  Clear", NULL);
+    		ImGui::MenuItem("  New", NULL);
+    		if (ImGui::MenuItem("  Save", NULL)){show_save = true;}
+    		if (ImGui::MenuItem("  Open", NULL)){show_open = true;}
+    		ImGui::MenuItem("  Open recent", NULL);
     		if(ImGui::BeginMenu("  Insert"))
     		{
     			ImGui::MenuItem("Box comment", NULL);
     			ImGui::MenuItem("Time & Date", NULL);
+    			
     			ImGui::EndMenu();
 			}
-    		if (ImGui::MenuItem("  Save", NULL)){show_save = true;}
-    		if (ImGui::MenuItem("  Load", NULL)){show_open = true;}
+			if(ImGui::BeginMenu("  Edit"))
+    		{
+    			ImGui::MenuItem("Indent", NULL);
+    			ImGui::MenuItem("Unindent", NULL);
+    			
+    			ImGui::EndMenu();
+			}
     		ImGui::EndMenu();
 		}
 	ImGui::EndMenuBar();
 	}
-ImGui::InputTextMultiline("##Workspace1", Workspace1, IM_ARRAYSIZE(Workspace1), ImVec2(-1.0f, -1.0 * 16), ImGuiInputTextFlags_AllowTabInput );
 ImGui::End();
 }
 
@@ -391,15 +572,24 @@ ImGui::InputTextMultiline("##Workspace2", Workspace2, IM_ARRAYSIZE(Workspace2), 
 	{
 	if (ImGui::BeginMenu("Options"))
 		{
-    		ImGui::MenuItem("  Clear", NULL);
+    		ImGui::MenuItem("  New", NULL);
+    		if (ImGui::MenuItem("  Save", NULL)){show_save = true;}
+    		if (ImGui::MenuItem("  Open", NULL)){show_open = true;}
+    		ImGui::MenuItem("  Open recent", NULL);
     		if(ImGui::BeginMenu("  Insert"))
     		{
     			ImGui::MenuItem("Box comment", NULL);
     			ImGui::MenuItem("Time & Date", NULL);
+    			
     			ImGui::EndMenu();
 			}
-    		if (ImGui::MenuItem("  Save", NULL)){show_save = true;}
-    		if (ImGui::MenuItem("  Load", NULL)){show_open = true;}
+			if(ImGui::BeginMenu("  Edit"))
+    		{
+    			ImGui::MenuItem("Indent", NULL);
+    			ImGui::MenuItem("Unindent", NULL);
+    			
+    			ImGui::EndMenu();
+			}
     		ImGui::EndMenu();
 		}
 	ImGui::EndMenuBar();
@@ -418,15 +608,24 @@ ImGui::InputTextMultiline("##Workspace3", Workspace3, IM_ARRAYSIZE(Workspace3), 
 	{
 	if (ImGui::BeginMenu("Options"))
 		{
-    		ImGui::MenuItem("  Clear", NULL);
+    		ImGui::MenuItem("  New", NULL);
+    		if (ImGui::MenuItem("  Save", NULL)){show_save = true;}
+    		if (ImGui::MenuItem("  Open", NULL)){show_open = true;}
+    		ImGui::MenuItem("  Open recent", NULL);
     		if(ImGui::BeginMenu("  Insert"))
     		{
     			ImGui::MenuItem("Box comment", NULL);
     			ImGui::MenuItem("Time & Date", NULL);
+    			
     			ImGui::EndMenu();
 			}
-    		if (ImGui::MenuItem("  Save", NULL)){show_save = true;}
-    		if (ImGui::MenuItem("  Load", NULL)){show_open = true;}
+			if(ImGui::BeginMenu("  Edit"))
+    		{
+    			ImGui::MenuItem("Indent", NULL);
+    			ImGui::MenuItem("Unindent", NULL);
+    			
+    			ImGui::EndMenu();
+			}
     		ImGui::EndMenu();
 		}
 	ImGui::EndMenuBar();
@@ -438,13 +637,14 @@ ImGui::End();
 //
 //	Editor and other windows.
 //
-
-		show_editor_window 	= true;
+		
+		show_editor_window 	= true; // Not close-able.
+		
 		if (show_welcome)
 		{
 			ImGui::Begin("Welcome screen", &show_welcome);
 			ImGui::Text("");
-			ImGui::SameLine(ImGui::GetWindowContentRegionWidth()/2 -90);
+			ImGui::SameLine(ImGui::GetWindowContentRegionWidth()/2 -95);
 			ImGui::Image((void *)Editor, ImVec2(200, 200), ImVec2(0,0),ImVec2(1,1),ImVec4(255,255,255,255),ImVec4(0,0,0,0));
 			ImGui::Separator();
 			ImGui::InputTextMultiline("##Welcome", Welcome, IM_ARRAYSIZE(Welcome), ImVec2(-1.0f, -1.0 * 16), ImGuiInputTextFlags_AllowTabInput | ImGuiInputTextFlags_ReadOnly);
@@ -501,30 +701,30 @@ ImGui::End();
 			if(ImGui::ImageButton((void *)help, ImVec2(20, 20), ImVec2(0,0),ImVec2(1,1),0,ImVec4(0,0,0,0),ImVec4(255,255,255,255))){show_help_support = true;}
 			if (ImGui::IsItemHovered()){ImGui::BeginTooltip();ImGui::Text("Help & Support");ImGui::EndTooltip();}
 			
+			ImGui::SameLine();
+			if(ImGui::ImageButton((void *)web, ImVec2(20, 20), ImVec2(0,0),ImVec2(1,1),0,ImVec4(0,0,0,0),ImVec4(255,255,255,255))){show_web_browser = true;}
+			if (ImGui::IsItemHovered()){ImGui::BeginTooltip();ImGui::Text("Web browser");ImGui::EndTooltip();}
+			
 			ImGui::EndChild();
             ImGui::PopStyleVar();
             ImGui::Separator();
             ImGui::Text("Code Snippets");
             ImGui::Separator();
             ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 5.0f);
-            ImGui::BeginChild("####codesnippets", ImVec2(-1,-1), true,ImGuiWindowFlags_NoScrollbar);
+            ImGui::BeginChild("####codesnippets", ImVec2(-1,-1), true,ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
             ImGui::InputTextMultiline("##CodeCopyArea", Codesnippets, IM_ARRAYSIZE(Codesnippets), ImVec2(-1.0f, -1.0 * 16), ImGuiInputTextFlags_AllowTabInput);
 			ImGui::Text("");
 			ImGui::SameLine(ImGui::GetWindowContentRegionWidth()/2 -40);
 			if(ImGui::Button("Save Snippets"))
 			{
-				static ImGuiOnceUponAFrame once;
-				if (once)
-				{
 				ofstream save_data("Snippets.txt");
 				if (save_data.is_open())
 				{save_data << Codesnippets;save_data.close();show_save_complete = true;}
-				}
 			}
 			ImGui::EndChild();
             ImGui::PopStyleVar();
             ImGui::End();
-		}
+       	}
 		if (show_new_wizard)
 		{
 			ImGui::Begin("New wizard", &show_new_wizard);
@@ -561,7 +761,6 @@ ImGui::End();
 				if (selectedworkspace == 1){Work_space_one = true;}
 				if (selectedworkspace == 2){Work_space_two = true;}
 				if (selectedworkspace == 3){Work_space_three = true;}
-				
 				}
 			}
 			
@@ -586,10 +785,6 @@ ImGui::End();
             ImGui::Separator();
 			if (ImGui::Button("Open"))
 			{
-				static ImGuiOnceUponAFrame once;
-				if (once)
-				{
-					
 				if (load_selected_one == true && Work_space_one	== true)
 				{ifstream file(load_name.c_str(), ios::in|ios::ate);if (file.is_open()){streampos size;size = file.tellg();file.seekg (0, ios::beg);file.read (Workspace1, size);file.close();}}
 			
@@ -598,12 +793,10 @@ ImGui::End();
 				
 				if (load_selected_three == true && Work_space_three == true)
 				{ifstream file(load_name.c_str(), ios::in|ios::ate);if (file.is_open()){streampos size;size = file.tellg();file.seekg (0, ios::beg);file.read (Workspace3, size);file.close();}}
-				
-				}
 			}
 			ImGui::SameLine();
 			if(ImGui::Button("UI Open"))
-			{guiopen = true;}
+			{show_guiopen = true;}
 			ImGui::SameLine();
 			if(ImGui::Button("Prefab"))
 			{show_prefab_list = true;}
@@ -632,17 +825,13 @@ ImGui::End();
             ImGui::Separator();
 			if(ImGui::Button("Save"))
 			{
-				static ImGuiOnceUponAFrame once;
-				if (once)
-				{
-					if(save_selected_one == true){ofstream save_data(save_name.c_str());if (save_data.is_open()){save_data << Workspace1;save_data.close(); show_save_complete = true;}}
-					if(save_selected_two == true){ofstream save_data(save_name.c_str());if (save_data.is_open()){save_data << Workspace2;save_data.close();show_save_complete = true;}}
-					if(save_selected_three == true){ofstream save_data(save_name.c_str());if (save_data.is_open()){save_data << Workspace3;save_data.close();show_save_complete = true;}}
-				}
+				if(save_selected_one == true){ofstream save_data(save_name.c_str());if (save_data.is_open()){save_data << Workspace1;save_data.close(); show_save_complete = true;}}
+				if(save_selected_two == true){ofstream save_data(save_name.c_str());if (save_data.is_open()){save_data << Workspace2;save_data.close();show_save_complete = true;}}
+				if(save_selected_three == true){ofstream save_data(save_name.c_str());if (save_data.is_open()){save_data << Workspace3;save_data.close();show_save_complete = true;}}
 			}
 			ImGui::SameLine();
 			if(ImGui::Button("UI Open"))
-			{guisave = true;}
+			{show_guisave = true;}
 			ImGui::End();
 		}
 		if (show_save_complete)
@@ -681,7 +870,6 @@ ImGui::End();
    			ImGui::Text("trace-globals.lua");ImGui::SameLine(200);ImGui::Text("trace assigments to global variables");
    			ImGui::Text("undefined.lua");ImGui::SameLine(200);ImGui::Text("catch \"undefined\" global variables");
    			ImGui::Text("xd.lua");ImGui::SameLine(200);ImGui::Text("hex dump");
-			
 			ImGui::End();
 		}
 		if (show_IO)
@@ -699,7 +887,6 @@ ImGui::End();
 			static char save_Output_saved[1024] = "C:\\%DIR%";    // setup text filtering, could be in latest update.
             string saved_lua_Output = save_Output_saved;							
 			ImGui::Text("Output script save folder - Where you wish the .lua scripts to be moved to.");
-										
 			ImGui::InputText("###save_Output_saved", save_Output_saved, IM_ARRAYSIZE(save_Output_saved), ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_AutoSelectAll);
             ImGui::SameLine();
             ImGui::Button("Save");
@@ -713,9 +900,6 @@ ImGui::End();
 			ImGui::Separator();
 			if(ImGui::Button("Update batch"))
 			{
-				static ImGuiOnceUponAFrame once;
-				if (once)
-				{
 				ofstream save_data("Copy.bat");
 				if (save_data.is_open())
 				{
@@ -726,7 +910,6 @@ ImGui::End();
 				save_data << save_Output_compiler;
 				save_data.close();
 				show_save_complete = true;}
-				}
 			}
 			ImGui::End();
 		}
@@ -815,13 +998,13 @@ ImGui::End();
 //	Should be able to add a small folder icon to represent directories.
 //	Same also for .txt/.lua/.out files.
 //
-//	No boost added yet need further documentation. will be 1.6.7  
+//	No boost added yet need further documentation. will be 1.67  
 //	Also means i have a generic save/load ui to copy & paste into
 //	other projects.
 //
-		if (guiopen)
+		if (show_guiopen)
 		{
-			ImGui::Begin("Generic open file explorer", &guiopen);
+			ImGui::Begin("Generic open file explorer", &show_guiopen);
 			ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 5.0f);
 			ImGui::BeginChild("####leftpanel", ImVec2(50,300), true);
 			ImGui::Text("");
@@ -864,9 +1047,9 @@ ImGui::End();
   			ImGui::End();
 		}
 		
-		if (guisave)
+		if (show_guisave)
 		{
-			ImGui::Begin("Generic save file explorer", &guisave);
+			ImGui::Begin("Generic save file explorer", &show_guisave);
 			ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 5.0f);
 			ImGui::BeginChild("####leftpanel", ImVec2(50,300), true);
 			ImGui::Text("");
@@ -908,6 +1091,399 @@ ImGui::End();
 			ImGui::PopStyleVar();
   			ImGui::End();
 		}
+////////////////////////////////////////////////////////////////////////
+//
+//	Web browser - WIP -Skeleton-
+//
+//	Would like to use beast BUT locksup my IDE when including
+//  Any boost/beast.hpp header. Issues! never had that!
+//	Variables need to be made global to work as i want.
+//
+//  boost::Asio seems to be working though. Huzzah! =)
+//	Nope boost::Asio issues :| undefined reference
+// 	and i have linked statics.
+//
+//	Maybe built my libraries wrong? Can try rebuilding.
+//	With single thread only.
+//
+//	Sigh.
+// 
+//	Oh boy the loverly code, I need to save this.
+//	Itching so badly to write a server app =)
+//
+if (show_web_browser)
+		{
+			show_inprogram_dbg	= true;
+			ImGui::Begin("WIP *Skeleton* Minimal web browser", &show_web_browser);
+			ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 5.0f);
+            ImGui::BeginChild("####webmenu", ImVec2(-1,35), true,ImGuiWindowFlags_NoScrollbar);
+            
+			if(ImGui::ImageButton((void *)home, ImVec2(20, 20), ImVec2(0,0),ImVec2(1,1),0,ImVec4(0,0,0,0),ImVec4(255,255,255,255))){}
+            if (ImGui::IsItemHovered()){ImGui::BeginTooltip();ImGui::Text("Home");ImGui::EndTooltip();}
+			
+			ImGui::SameLine();
+			if(ImGui::ImageButton((void *)back, ImVec2(20, 20), ImVec2(0,0),ImVec2(1,1),0,ImVec4(0,0,0,0),ImVec4(255,255,255,255))){}
+            if (ImGui::IsItemHovered()){ImGui::BeginTooltip();ImGui::Text("Back");ImGui::EndTooltip();}
+			
+			ImGui::SameLine();
+			if(ImGui::ImageButton((void *)stop, ImVec2(20, 20), ImVec2(0,0),ImVec2(1,1),0,ImVec4(0,0,0,0),ImVec4(255,255,255,255))){}
+            if (ImGui::IsItemHovered()){ImGui::BeginTooltip();ImGui::Text("Stop");ImGui::EndTooltip();}
+			
+			ImGui::SameLine();
+			if(ImGui::ImageButton((void *)forward, ImVec2(20, 20), ImVec2(0,0),ImVec2(1,1),0,ImVec4(0,0,0,0),ImVec4(255,255,255,255))){}
+            if (ImGui::IsItemHovered()){ImGui::BeginTooltip();ImGui::Text("Forward");ImGui::EndTooltip();}
+			
+			ImGui::SameLine();
+			ImGui::PushItemWidth(300);
+			static char web_url[40] = "www.google.com";
+			ImGui::InputText("###url_address", web_url, IM_ARRAYSIZE(web_url), ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue);
+			ImGui::PopItemWidth();
+			
+			ImGui::SameLine();
+			if(ImGui::ImageButton((void *)web, ImVec2(20, 20), ImVec2(0,0),ImVec2(1,1),0,ImVec4(0,0,0,0),ImVec4(255,255,255,255))){}
+            if (ImGui::IsItemHovered()){ImGui::BeginTooltip();ImGui::Text("Go/Refresh");ImGui::EndTooltip();}
+			
+			
+			ImGui::SameLine();
+			if(ImGui::ImageButton((void *)bookmarks, ImVec2(20, 20), ImVec2(0,0),ImVec2(1,1),0,ImVec4(0,0,0,0),ImVec4(255,255,255,255))){show_bookmarks_saved = true;}
+            if (ImGui::IsItemHovered()){ImGui::BeginTooltip();ImGui::Text("Bookmarks");ImGui::EndTooltip();}
+			
+			ImGui::SameLine();
+			if(ImGui::ImageButton((void *)downloads, ImVec2(20, 20), ImVec2(0,0),ImVec2(1,1),0,ImVec4(0,0,0,0),ImVec4(255,255,255,255))){show_download_manager = true;}
+            if (ImGui::IsItemHovered()){ImGui::BeginTooltip();ImGui::Text("Downloads & Uploads");ImGui::EndTooltip();}
+			
+			ImGui::SameLine();
+			if(ImGui::ImageButton((void *)settings, ImVec2(20, 20), ImVec2(0,0),ImVec2(1,1),0,ImVec4(0,0,0,0),ImVec4(255,255,255,255))){show_web_settings = true;}
+            if (ImGui::IsItemHovered()){ImGui::BeginTooltip();ImGui::Text("Browser settings");ImGui::EndTooltip();}
+			
+			
+			ImGui::EndChild();
+			
+            ImGui::BeginChild("####web_page_display", ImVec2(-1,400), true,ImGuiWindowFlags_NoScrollbar);
+            
+			ImGui::EndChild();
+			ImGui::Separator();
+			char buf[128];
+    		sprintf(buf, "Status : %c", "|/-\\"[(int)(ImGui::GetTime()/0.25f)&3], ImGui::GetFrameCount());
+    		ImGui::Text(buf);
+			ImGui::SameLine(ImGui::GetWindowContentRegionWidth()/2 +350);
+			if(status_empty){if(ImGui::ImageButton((void *)statusempty, ImVec2(16, 16), ImVec2(0,0),ImVec2(1,1),0,ImVec4(0,0,0,0),ImVec4(255,255,255,255))){}}
+			if(status_red){if(ImGui::ImageButton((void *)statusred, ImVec2(16, 16), ImVec2(0,0),ImVec2(1,1),0,ImVec4(0,0,0,0),ImVec4(255,255,255,255))){}}
+			if(status_yellow){if(ImGui::ImageButton((void *)statusyellow, ImVec2(16, 16), ImVec2(0,0),ImVec2(1,1),0,ImVec4(0,0,0,0),ImVec4(255,255,255,255))){}}
+			if(status_green){if(ImGui::ImageButton((void *)statusgreen, ImVec2(16, 16), ImVec2(0,0),ImVec2(1,1),0,ImVec4(0,0,0,0),ImVec4(255,255,255,255))){}}
+			if (ImGui::IsItemHovered()){ImGui::BeginTooltip();ImGui::Text("Status - Click for details.");ImGui::EndTooltip();}
+			
+//////////////////////////////////////////////////////////
+//
+//	Used for tcp/ip checking connectivity.
+//	Will be broken down and removed.
+//	Useful for copy/paste.
+//
+//			
+			if(status_empty){status_yellow = false;status_green = false;status_red = false;}
+			if(status_red){status_yellow = false;status_green = false;status_empty = false;}
+			if(status_yellow){status_red = false;status_green = false;status_empty = false;}
+			if(status_green){status_yellow = false;status_red = false;status_empty = false;}
+
+/////////////////////////////////////////////////////////
+			
+			ImGui::PopStyleVar();
+			ImGui::End();
+		}
+		
+
+if(show_web_settings)
+		{
+			ImGui::Begin("Browser settings", &show_web_settings, ImGuiWindowFlags_MenuBar);
+				if (ImGui::BeginMenuBar())
+				{
+				if (ImGui::BeginMenu("Options"))
+				{
+		    		
+		    		if (ImGui::MenuItem("  Save", NULL)){}
+		    		if (ImGui::MenuItem("  Import", NULL)){}
+		    		ImGui::MenuItem("  Export", NULL);
+		    		ImGui::MenuItem("  Default", NULL);
+					
+		    		ImGui::EndMenu();
+					}
+				ImGui::EndMenuBar();
+				}
+			ImGui::Text("Settings for browser.\nClick on the headers for details.\nClick menu options to save.");
+			ImGui::Text("");
+//////////////////////////////////////////////////////////////
+//
+//	Helpful batch file calls.
+//
+			if (ImGui::CollapsingHeader("TCP/IP")) 
+            {
+			
+			if(ImGui::Button("TCP::IP -I"))
+			{
+				static ImGuiOnceUponAFrame Ipstatus;	
+				if (Ipstatus)
+					{
+						system("ipconfigure.bat");
+					}
+			}
+			ImGui::SameLine();
+			if(ImGui::Button("Netstat On"))
+			{
+				static ImGuiOnceUponAFrame Ipstatus;	
+				if (Ipstatus)
+					{
+						system("ipconfigure.netstat.on.bat");
+					}
+			}
+			ImGui::SameLine();
+			if(ImGui::Button("Netstat -A"))
+			{
+				static ImGuiOnceUponAFrame Ipstatus;	
+				if (Ipstatus)
+					{
+						system("ipconfigure.netstat.a.bat");
+					}
+			}
+			
+			if(ImGui::Button("Netstat -O"))
+			{
+				static ImGuiOnceUponAFrame Ipstatus;	
+				if (Ipstatus)
+					{
+						system("ipconfigure.netstat.o.bat");
+					}
+			}
+			ImGui::SameLine();
+			if(ImGui::Button("Netstat -T"))
+			{
+				static ImGuiOnceUponAFrame Ipstatus;	
+				if (Ipstatus)
+					{
+						system("ipconfigure.netstat.t.bat");
+					}
+			}
+			ImGui::SameLine();
+			if(ImGui::Button("Netstat -F"))
+			{
+				static ImGuiOnceUponAFrame Ipstatus;	
+				if (Ipstatus)
+					{
+						system("ipconfigure.netstat.f.bat");
+					}
+			}
+			}
+			ImGui::Separator();
+			if (ImGui::CollapsingHeader("WMIC")) 
+			{
+				
+			if(ImGui::Button("WMIC Open"))
+			{
+				static ImGuiOnceUponAFrame Ipstatus1;	
+				if (Ipstatus1)
+					{
+						system("ipconfigure.wmic.bat");
+					}
+			}
+			ImGui::SameLine();
+			if(ImGui::Button("WMIC - Support & Information"))
+			{
+				static ImGuiOnceUponAFrame Ipstatus;	
+				if (Ipstatus)
+					{
+						system("ipconfigure.wmic.help.bat");
+					}
+			}
+			}
+////////////////////////////////////////////////////////////////
+			ImGui::Separator();
+			if (ImGui::CollapsingHeader("Browser options")) 
+			{
+			ImGui::Text("");	
+			ImGui::Text("Mobile phone or Desktop browsing:");
+			ImGui::Checkbox("Mobile only", &mobile_html);
+			ImGui::Separator();
+			ImGui::Text("Bookmarks:");
+			ImGui::BeginChild("####bookmarks", ImVec2(-1,150), true,ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+			ImGui::InputTextMultiline("##bookmarks_kept", bookmarks_kept, IM_ARRAYSIZE(bookmarks_kept), ImVec2(-1.0f, -1.0 * 16), ImGuiInputTextFlags_AllowTabInput);
+			if(ImGui::SmallButton("Update bookmarks")){ofstream save_data("Bookmarks.setting");if (save_data.is_open()){save_data << bookmarks_kept;save_data.close(); show_save_complete = true;}}
+			if (ImGui::IsItemHovered()){ImGui::BeginTooltip();ImGui::Text("Update to save bookmarks.");ImGui::EndTooltip();}
+			ImGui::EndChild();
+			ImGui::PushItemWidth(-1);
+			ImGui::Separator();
+			ImGui::Text("Homepage:");
+			static char homepage[256] = "www.google.com";
+			ImGui::InputText("###default_homepage", homepage, IM_ARRAYSIZE(homepage), ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_AutoSelectAll);
+			ImGui::Separator();
+			ImGui::Text("Downloads folder:");
+			static char download_folder[256] = "C:\\";
+			ImGui::InputText("###default_download", download_folder, IM_ARRAYSIZE(download_folder), ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_AutoSelectAll);
+			ImGui::PopItemWidth();
+			}
+			
+			ImGui::Separator();
+			if (ImGui::CollapsingHeader("FTP")) 
+            {
+            ImGui::PushItemWidth(-1);
+			ImGui::Text("");	
+			ImGui::Text("FTP Settings:");
+			ImGui::Text("");
+			ImGui::Text("IP:PORT");
+			static char ftpconnect[256] = "192.168.0.1:1000";
+			ImGui::InputText("###default_ftpip", ftpconnect, IM_ARRAYSIZE(ftpconnect), ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_AutoSelectAll);
+			ImGui::Text("");
+			ImGui::Text("Login details:");
+			static char ftp_connect_name[256] = "Username";
+			ImGui::InputText("###default_ftp_name", ftp_connect_name, IM_ARRAYSIZE(ftp_connect_name), ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_AutoSelectAll);
+			static char ftp_connect_password[256] = "Password";
+			ImGui::InputText("###default_ftp_password", ftp_connect_password, IM_ARRAYSIZE(ftp_connect_password), ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_Password);
+			ImGui::Checkbox("Save FTP Login credentials", &save_ftp_login);
+			ImGui::Text("");
+			ImGui::Text("FTP Connection test. ");
+			ImGui::SameLine();
+			ImGui::SmallButton("Test");
+			ImGui::PopItemWidth();
+			}
+			ImGui::Separator();
+			if (ImGui::CollapsingHeader("Cloud Settings")) 
+			{
+			ImGui::PushItemWidth(-1);	
+			ImGui::Text("");	
+			ImGui::Text("Cloud Settings:");
+			ImGui::Text("");
+			ImGui::Text("Web address:");
+			static char cloudconnect[256] = "www.google.com/cloud";
+			ImGui::InputText("###default_cloudaddress", cloudconnect, IM_ARRAYSIZE(cloudconnect), ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_AutoSelectAll);
+			ImGui::Text("");
+			ImGui::Text("Login details:");
+			static char cloud_connect_name[256] = "Username";
+			ImGui::InputText("###default_cloud_name", cloud_connect_name, IM_ARRAYSIZE(cloud_connect_name), ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_AutoSelectAll);
+			static char cloud_connect_password[256] = "Password";
+			ImGui::InputText("###default_cloud_password", cloud_connect_password, IM_ARRAYSIZE(cloud_connect_password), ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_Password);
+			ImGui::Checkbox("Save Cloud Login credentials", &save_cloud_login);
+			ImGui::Text("");
+			ImGui::Text("Cloud Connection test. ");
+			ImGui::SameLine();
+			ImGui::SmallButton("Test");
+			ImGui::PopItemWidth();
+			}
+			ImGui::Separator();
+			
+			
+			ImGui::End();
+		}
+/////////////////////////////////////////////////////////////////
+//
+//	Downloads manager.
+//
+//	Handles upstream/downstream.
+//
+if (show_download_manager)
+	{
+		ImGui::Begin("Downloads & Uploads Manager", &show_download_manager);
+		ImGui::Text("Download");
+		ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 5.0f);
+		ImGui::BeginChild("####Downloading", ImVec2(-1,135), true);
+		ImGui::Text("Filename: ");
+		ImGui::Separator();
+		ImGui::Text("Host:");
+		ImGui::Separator();
+		static float Download_rate = 0.0f;
+		ImGui::Text("Transfer:  %fKb/s",Download_rate);
+		ImGui::Separator();
+		static float Download = 0.0f;
+		ImGui::ProgressBar(Download, ImVec2(-1.0f,0.0f));
+		ImGui::Separator();
+		if(ImGui::ImageButton((void *)contiune, ImVec2(20, 20), ImVec2(0,0),ImVec2(1,1),0,ImVec4(0,0,0,0),ImVec4(255,255,255,255))){}
+        if (ImGui::IsItemHovered()){ImGui::BeginTooltip();ImGui::Text("Continue");ImGui::EndTooltip();}
+			
+		ImGui::SameLine();
+		if(ImGui::ImageButton((void *)pause, ImVec2(20, 20), ImVec2(0,0),ImVec2(1,1),0,ImVec4(0,0,0,0),ImVec4(255,255,255,255))){}
+        if (ImGui::IsItemHovered()){ImGui::BeginTooltip();ImGui::Text("Pause");ImGui::EndTooltip();}
+		
+		ImGui::SameLine();
+		if(ImGui::ImageButton((void *)stop, ImVec2(20, 20), ImVec2(0,0),ImVec2(1,1),0,ImVec4(0,0,0,0),ImVec4(255,255,255,255))){}
+        if (ImGui::IsItemHovered()){ImGui::BeginTooltip();ImGui::Text("Cancel");ImGui::EndTooltip();}
+		
+		ImGui::SameLine();
+		ImGui::Button("FTP Download");	
+		
+		ImGui::EndChild();
+		ImGui::PopStyleVar();
+		ImGui::Text("Upload");
+		ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 5.0f);
+		ImGui::BeginChild("####Uploading", ImVec2(-1,135), true);
+		ImGui::Text("Filename: ");
+		ImGui::Separator();
+		ImGui::Text("Upload location:");
+		ImGui::Separator();
+		static float Upload_rate = 0.0f;
+		ImGui::Text("Transfer:  %fKb/s",Upload_rate);
+		ImGui::Separator();
+		static float Upload = 0.0f;
+		ImGui::ProgressBar(Upload, ImVec2(-1.0f,0.0f));
+		ImGui::Separator();
+		if(ImGui::ImageButton((void *)contiune, ImVec2(20, 20), ImVec2(0,0),ImVec2(1,1),0,ImVec4(0,0,0,0),ImVec4(255,255,255,255))){}
+        if (ImGui::IsItemHovered()){ImGui::BeginTooltip();ImGui::Text("Continue");ImGui::EndTooltip();}
+			
+		ImGui::SameLine();
+		if(ImGui::ImageButton((void *)pause, ImVec2(20, 20), ImVec2(0,0),ImVec2(1,1),0,ImVec4(0,0,0,0),ImVec4(255,255,255,255))){}
+        if (ImGui::IsItemHovered()){ImGui::BeginTooltip();ImGui::Text("Pause");ImGui::EndTooltip();}
+		
+		ImGui::SameLine();
+		if(ImGui::ImageButton((void *)stop, ImVec2(20, 20), ImVec2(0,0),ImVec2(1,1),0,ImVec4(0,0,0,0),ImVec4(255,255,255,255))){}
+        if (ImGui::IsItemHovered()){ImGui::BeginTooltip();ImGui::Text("Cancel");ImGui::EndTooltip();}
+		
+		ImGui::SameLine();
+		ImGui::Button("FTP Upload");	
+		
+		ImGui::EndChild();
+		ImGui::PopStyleVar();
+		ImGui::End();
+	}
+
+if(show_bookmarks_saved)
+	{
+		
+		ImGui::Begin("Bookmarks", &show_bookmarks_saved);
+		char Bookmark_display[1024*16];
+		ifstream file("Bookmarks.setting", ios::in|ios::ate);
+			if (file.is_open())
+				{						
+				streampos size;			
+		  		size = file.tellg();
+				file.seekg (0, ios::beg);
+				for (int w = 0; w < 20; w++)
+				{
+				file.getline(Bookmark_display, size);	
+				int i = -1;
+				bool selected;
+				char buf[32];
+				sprintf(buf, "%s", Bookmark_display);
+			    if (ImGui::Selectable(buf, selected == i)) 
+				selected = i;
+				}
+				file.close();
+				}
+												
+		ImGui::End();
+	}
+/////////////////////////////////////////////////////////////////////
+//
+//	Debugger. 
+//
+//	Temp, while code under construction.
+//
+if(show_inprogram_dbg)
+		{
+			ImGui::Begin("Debugger", &show_inprogram_dbg);
+			ImGui::Checkbox("red",&status_red);
+			ImGui::Checkbox("yellow",&status_yellow);
+			ImGui::Checkbox("green",&status_green);
+			ImGui::Checkbox("empty",&status_empty);
+			
+			ImGui::End();
+		}
+/////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////
 //
