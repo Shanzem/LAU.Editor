@@ -3,7 +3,9 @@
 
 
 
-//#include <boost/asio/ip/tcp.hpp>
+#include <boost/asio.hpp>
+#include <boost/thread.hpp>
+#include <boost/chrono.hpp>
 #include "imgui.h"
 #include "imgui_impl_dx9.h"
 #include <d3d9.h>
@@ -45,101 +47,63 @@
 //
 //	Slowly reworking this into my Minimal browser.
 //	
-//	Current problem :
+//	UPDATE 1
 //
-//	undefined reference to `_imp__WSACleanup@0'
-//
-//	Odd statics linked for dependencies.
-//
+//	I have the entire boost library built.
+//	Said library works. I have got sockets =)!!
 //	
-//
-//////////////////////////////////////////////////////
-//
-//	Source for http client. to Dissect and integrate.
-//
-/////////////////////////////////////////////////////
+// Grabbed Cef binaries and turned the .libs
+//	For the DLL shared linkers to .A format using reimp
+//	This will give me HTML 5!! suppprt.
 //
 //
+/////////////////////////////////////////////////////////////
+//
+//	Threading resources & calls
+//
+//
+void cmd() 
+{
+system("cmd");
+}
+void lua() 
+{
+system("lua");
+}
+void ipconfigure_bat() 
+{
+system("ipconfigure.bat");
+}
+void ipconfigure_netstat_on_bat() 
+{
+system("ipconfigure.netstat.on.bat");
+}
+void ipconfigure_netstat_a_bat() 
+{
+system("ipconfigure.netstat.a.bat");
+}
+void ipconfigure_netstat_o_bat() 
+{
+system("ipconfigure.netstat.o.bat");
+}
+void ipconfigure_netstat_t_bat() 
+{
+system("ipconfigure.netstat.t.bat");
+}
+void ipconfigure_netstat_f_bat() 
+{
+system("ipconfigure.netstat.f.bat");
+}
+void ipconfigure_wmic_bat() 
+{
+system("ipconfigure.wmic.bat");
+}
+void ipconfigure_wmic_help_bat() 
+{
+system("ipconfigure.wmic.help.bat");
+}
+/////////////////////////////////////////////////////////////
 //using boost::asio::ip::tcp;
-//
-//int main(int argc, char* argv[])
-//{
-//  try
-//  {
-//    if (argc != 3)
-//    {
-//      std::cout << "Usage: http_client <server> <path>\n";
-//      std::cout << "Example:\n";
-//      std::cout << "  http_client www.boost.org /LICENSE_1_0.txt\n";
-//      return 1;
-//    }
-//
-//    boost::asio::ip::tcp::iostream s; 
-//
-//    // The entire sequence of I/O operations must complete within 60 seconds.
-//    // If an expiry occurs, the socket is automatically closed and the stream
-//    // becomes bad.
-//    s.expires_after(std::chrono::seconds(60));
-//
-//    // Establish a connection to the server.
-//    s.connect(argv[1], "http");
-//    if (!s)
-//    {
-//      std::cout << "Unable to connect: " << s.error().message() << "\n";
-//      return 1;
-//    }
-//
-//    // Send the request. We specify the "Connection: close" header so that the
-//    // server will close the socket after transmitting the response. This will
-//    // allow us to treat all data up until the EOF as the content.
-//    s << "GET " << argv[2] << " HTTP/1.0\r\n";
-//    s << "Host: " << argv[1] << "\r\n";
-//    s << "Accept: */*\r\n";
-//    s << "Connection: close\r\n\r\n";
-//
-//    // By default, the stream is tied with itself. This means that the stream
-//    // automatically flush the buffered output before attempting a read. It is
-//    // not necessary not explicitly flush the stream at this point.
-//
-//    // Check that response is OK.
-//    std::string http_version;
-//    s >> http_version;
-//    unsigned int status_code;
-//    s >> status_code;
-//    std::string status_message;
-//    std::getline(s, status_message);
-//    if (!s || http_version.substr(0, 5) != "HTTP/")
-//    {
-//      std::cout << "Invalid response\n";
-//      return 1;
-//    }
-//    if (status_code != 200)
-//    {
-//      std::cout << "Response returned with status code " << status_code << "\n";
-//      return 1;
-//    }
-//
-//    // Process the response headers, which are terminated by a blank line.
-//    std::string header;
-//    while (std::getline(s, header) && header != "\r")
-//      std::cout << header << "\n";
-//    std::cout << "\n";
-//
-//    // Write the remaining data to output.
-//    std::cout << s.rdbuf();
-//  }
-//  catch (std::exception& e)
-//  {
-//    std::cout << "Exception: " << e.what() << "\n";
-//  }
-//
-//  return 0;
-//}
-//
-///////////////////////////////////////////////////////
-
-
-
 using namespace std;
 // Data
 static LPDIRECT3DDEVICE9        g_pd3dDevice = NULL;
@@ -262,13 +226,13 @@ bool show_inprogram_dbg			= false;		// Debugger for web browser.
 //
 bool show_web_browser			= false;		// WIP beast locksup my IDE! / ASIO seems to work.
 bool show_web_settings			= false;		// Homepage/Downloads location/ssl/ftp/others
-bool save_ftp_login				= false;		// Saved as binary fileformat.
+bool save_ftp_login				= false;		// Saved as binary fileformat. STILL WIP
 bool mobile_html				= false;		// Mobile phone HTML only. look into me more.
 bool status_empty				= true;			// Connection status indicators.
 bool status_red					= false;		// "
 bool status_yellow				= false;		// "
 bool status_green				= false;		// "
-bool save_cloud_login			= false;		// Saved as binary fileformat.
+bool save_cloud_login			= false;		// Saved as binary fileformat. STILL WIP
 bool show_download_manager		= false;		// Used for upstream/downstream progress.
 bool show_bookmarks_saved		= false;		// Displays user defined bookmarks
 
@@ -392,7 +356,7 @@ static LPDIRECT3DTEXTURE9       statusred		= NULL;
 static LPDIRECT3DTEXTURE9       statusyellow	= NULL;
 static LPDIRECT3DTEXTURE9       statusgreen		= NULL;
 static LPDIRECT3DTEXTURE9       pause			= NULL;
-static LPDIRECT3DTEXTURE9       contiune		= NULL;
+static LPDIRECT3DTEXTURE9       resume			= NULL;
 
 
 D3DXCreateTextureFromFile( g_pd3dDevice, "filenew.png" ,	 &filenew );			// image file grabs here :)
@@ -419,10 +383,7 @@ D3DXCreateTextureFromFile( g_pd3dDevice, "statusred.png" , 	 &statusred );
 D3DXCreateTextureFromFile( g_pd3dDevice, "statusyellow.png" ,&statusyellow );
 D3DXCreateTextureFromFile( g_pd3dDevice, "statusgreen.png" , &statusgreen );
 D3DXCreateTextureFromFile( g_pd3dDevice, "pause.png" , 		 &pause );
-D3DXCreateTextureFromFile( g_pd3dDevice, "run.png" , 		 &contiune );
-
-
-
+D3DXCreateTextureFromFile( g_pd3dDevice, "run.png" , 		 &resume );
 //////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////
 
@@ -678,15 +639,13 @@ ImGui::End();
 			
 			
 			ImGui::SameLine();
-			if (ImGui::ImageButton((void *)compile, ImVec2(20, 20), ImVec2(0,0),ImVec2(1,1),0,ImVec4(0,0,0,0),ImVec4(255,255,255,255))){show_compiler = true;}
+			if (ImGui::ImageButton((void *)compile, ImVec2(20, 20), ImVec2(0,0),ImVec2(1,1),0,ImVec4(0,0,0,0),ImVec4(255,255,255,255))){static ImGuiOnceUponAFrame once;if (once){boost::thread_group threads;threads.create_thread(cmd);}}
 			if (ImGui::IsItemHovered()){ImGui::BeginTooltip();ImGui::Text("Compile");ImGui::EndTooltip();}
-			if(show_compiler == true){static ImGuiOnceUponAFrame once;if (once){system ("cmd");show_compiler = false;}}
 			
 			
 			ImGui::SameLine();
-			if (ImGui::ImageButton((void *)run, ImVec2(20, 20), ImVec2(0,0),ImVec2(1,1),0,ImVec4(0,0,0,0),ImVec4(255,255,255,255))){show_run = true;}
+			if (ImGui::ImageButton((void *)run, ImVec2(20, 20), ImVec2(0,0),ImVec2(1,1),0,ImVec4(0,0,0,0),ImVec4(255,255,255,255))){static ImGuiOnceUponAFrame once;if (once){boost::thread_group threads;threads.create_thread(lua);}}
 			if (ImGui::IsItemHovered()){ImGui::BeginTooltip();ImGui::Text("Run");ImGui::EndTooltip();}
-			if(show_run == true){static ImGuiOnceUponAFrame once;if (once){system ("lua");show_run = false;}}
 			
 			ImGui::SameLine();
 			if(ImGui::ImageButton((void *)settings, ImVec2(20, 20), ImVec2(0,0),ImVec2(1,1),0,ImVec4(0,0,0,0),ImVec4(255,255,255,255))){show_options = true;}
@@ -998,8 +957,8 @@ ImGui::End();
 //	Should be able to add a small folder icon to represent directories.
 //	Same also for .txt/.lua/.out files.
 //
-//	No boost added yet need further documentation. will be 1.67  
-//	Also means i have a generic save/load ui to copy & paste into
+//
+//	Nowi have a generic save/load ui to copy & paste into
 //	other projects.
 //
 		if (show_guiopen)
@@ -1095,19 +1054,7 @@ ImGui::End();
 //
 //	Web browser - WIP -Skeleton-
 //
-//	Would like to use beast BUT locksup my IDE when including
-//  Any boost/beast.hpp header. Issues! never had that!
-//	Variables need to be made global to work as i want.
 //
-//  boost::Asio seems to be working though. Huzzah! =)
-//	Nope boost::Asio issues :| undefined reference
-// 	and i have linked statics.
-//
-//	Maybe built my libraries wrong? Can try rebuilding.
-//	With single thread only.
-//
-//	Sigh.
-// 
 //	Oh boy the loverly code, I need to save this.
 //	Itching so badly to write a server app =)
 //
@@ -1135,13 +1082,18 @@ if (show_web_browser)
 			
 			ImGui::SameLine();
 			ImGui::PushItemWidth(300);
-			static char web_url[40] = "www.google.com";
+			static char web_url[1024] = "www.google.com";
 			ImGui::InputText("###url_address", web_url, IM_ARRAYSIZE(web_url), ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue);
 			ImGui::PopItemWidth();
 			
 			ImGui::SameLine();
-			if(ImGui::ImageButton((void *)web, ImVec2(20, 20), ImVec2(0,0),ImVec2(1,1),0,ImVec4(0,0,0,0),ImVec4(255,255,255,255))){}
-            if (ImGui::IsItemHovered()){ImGui::BeginTooltip();ImGui::Text("Go/Refresh");ImGui::EndTooltip();}
+			if(ImGui::ImageButton((void *)web, ImVec2(20, 20), ImVec2(0,0),ImVec2(1,1),0,ImVec4(0,0,0,0),ImVec4(255,255,255,255)))
+			
+			{
+				
+			}
+            
+			if (ImGui::IsItemHovered()){ImGui::BeginTooltip();ImGui::Text("Go/Refresh");ImGui::EndTooltip();}
 			
 			
 			ImGui::SameLine();
@@ -1223,7 +1175,8 @@ if(show_web_settings)
 				static ImGuiOnceUponAFrame Ipstatus;	
 				if (Ipstatus)
 					{
-						system("ipconfigure.bat");
+						boost::thread_group threads;
+						threads.create_thread(ipconfigure_bat);
 					}
 			}
 			ImGui::SameLine();
@@ -1232,7 +1185,8 @@ if(show_web_settings)
 				static ImGuiOnceUponAFrame Ipstatus;	
 				if (Ipstatus)
 					{
-						system("ipconfigure.netstat.on.bat");
+						boost::thread_group threads;
+						threads.create_thread(ipconfigure_netstat_on_bat);
 					}
 			}
 			ImGui::SameLine();
@@ -1241,7 +1195,8 @@ if(show_web_settings)
 				static ImGuiOnceUponAFrame Ipstatus;	
 				if (Ipstatus)
 					{
-						system("ipconfigure.netstat.a.bat");
+						boost::thread_group threads;
+						threads.create_thread(ipconfigure_netstat_a_bat);
 					}
 			}
 			
@@ -1250,7 +1205,9 @@ if(show_web_settings)
 				static ImGuiOnceUponAFrame Ipstatus;	
 				if (Ipstatus)
 					{
-						system("ipconfigure.netstat.o.bat");
+						boost::thread_group threads;
+						threads.create_thread(ipconfigure_netstat_o_bat);
+
 					}
 			}
 			ImGui::SameLine();
@@ -1259,7 +1216,9 @@ if(show_web_settings)
 				static ImGuiOnceUponAFrame Ipstatus;	
 				if (Ipstatus)
 					{
-						system("ipconfigure.netstat.t.bat");
+						boost::thread_group threads;
+						threads.create_thread(ipconfigure_netstat_t_bat);
+
 					}
 			}
 			ImGui::SameLine();
@@ -1268,7 +1227,9 @@ if(show_web_settings)
 				static ImGuiOnceUponAFrame Ipstatus;	
 				if (Ipstatus)
 					{
-						system("ipconfigure.netstat.f.bat");
+						boost::thread_group threads;
+						threads.create_thread(ipconfigure_netstat_f_bat);
+
 					}
 			}
 			}
@@ -1281,7 +1242,8 @@ if(show_web_settings)
 				static ImGuiOnceUponAFrame Ipstatus1;	
 				if (Ipstatus1)
 					{
-						system("ipconfigure.wmic.bat");
+						boost::thread_group threads;
+						threads.create_thread(ipconfigure_wmic_bat);
 					}
 			}
 			ImGui::SameLine();
@@ -1290,7 +1252,9 @@ if(show_web_settings)
 				static ImGuiOnceUponAFrame Ipstatus;	
 				if (Ipstatus)
 					{
-						system("ipconfigure.wmic.help.bat");
+						boost::thread_group threads;
+						threads.create_thread(ipconfigure_wmic_help_bat);
+
 					}
 			}
 			}
@@ -1367,8 +1331,6 @@ if(show_web_settings)
 			ImGui::PopItemWidth();
 			}
 			ImGui::Separator();
-			
-			
 			ImGui::End();
 		}
 /////////////////////////////////////////////////////////////////
@@ -1393,7 +1355,7 @@ if (show_download_manager)
 		static float Download = 0.0f;
 		ImGui::ProgressBar(Download, ImVec2(-1.0f,0.0f));
 		ImGui::Separator();
-		if(ImGui::ImageButton((void *)contiune, ImVec2(20, 20), ImVec2(0,0),ImVec2(1,1),0,ImVec4(0,0,0,0),ImVec4(255,255,255,255))){}
+		if(ImGui::ImageButton((void *)resume, ImVec2(20, 20), ImVec2(0,0),ImVec2(1,1),0,ImVec4(0,0,0,0),ImVec4(255,255,255,255))){}
         if (ImGui::IsItemHovered()){ImGui::BeginTooltip();ImGui::Text("Continue");ImGui::EndTooltip();}
 			
 		ImGui::SameLine();
@@ -1422,7 +1384,7 @@ if (show_download_manager)
 		static float Upload = 0.0f;
 		ImGui::ProgressBar(Upload, ImVec2(-1.0f,0.0f));
 		ImGui::Separator();
-		if(ImGui::ImageButton((void *)contiune, ImVec2(20, 20), ImVec2(0,0),ImVec2(1,1),0,ImVec4(0,0,0,0),ImVec4(255,255,255,255))){}
+		if(ImGui::ImageButton((void *)resume, ImVec2(20, 20), ImVec2(0,0),ImVec2(1,1),0,ImVec4(0,0,0,0),ImVec4(255,255,255,255))){}
         if (ImGui::IsItemHovered()){ImGui::BeginTooltip();ImGui::Text("Continue");ImGui::EndTooltip();}
 			
 		ImGui::SameLine();
@@ -1440,7 +1402,22 @@ if (show_download_manager)
 		ImGui::PopStyleVar();
 		ImGui::End();
 	}
-
+//////////////////////////////////////////////////////////////
+//
+//	Bookmarks select.
+//
+//	Will used selected to seek.get(0,"url list location");
+//	E.G :-
+//
+//	if seleced is left clicked
+//	seek.get(0,i); https://github.com/ (1 from 0 - 2 - currently)
+//
+//	Load into buffer, pass buffer to resolver.
+//	Bookmark page loaded, url in textinput changed
+//	to reflect bookmark selected.
+//
+//	If selected is blank do nothing?.
+//
 if(show_bookmarks_saved)
 	{
 		
@@ -1452,7 +1429,7 @@ if(show_bookmarks_saved)
 				streampos size;			
 		  		size = file.tellg();
 				file.seekg (0, ios::beg);
-				for (int w = 0; w < 20; w++)
+				for (int w = 0; w < size; w++)
 				{
 				file.getline(Bookmark_display, size);	
 				int i = -1;

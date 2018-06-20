@@ -11,7 +11,7 @@ ResourceIncludes=
 MakeIncludes=
 Compiler=
 CppCompiler=
-Linker=libd3d9.a_@@_libd3dx9_43.a_@@_libd3dx9d.a_@@_
+Linker=libd3d9.a_@@_libd3dx9_43.a_@@_libd3dx9d.a_@@_libboost_system-mgw49-mt-x32-1_67.a_@@_libboost_system-mgw49-mt-x32-1_67.dll.a_@@_libws2_32.a_@@_libboost_thread-mgw49-mt-x32-1_67.dll.a_@@_libwsock32.a_@@_
 IsCpp=1
 Icon=LUA Editor.ico
 ExeOutput=
@@ -28,7 +28,7 @@ Folders=
 IncludeVersionInfo=0
 SupportXPThemes=0
 CompilerSet=3
-CompilerSettings=00000001g0000000000000000
+CompilerSettings=0000000100000000000000000
 UnitCount=12
 
 [VersionInfo]
